@@ -1,5 +1,22 @@
-# Vue 3 + Vite
+# 🏉 Tactical Board Rugby
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+**Tactical Board Rugby** es una aplicación web interactiva diseñada para la creación, edición y animación de jugadas de rugby.  A través de un sistema de **keyframes**, permite visualizar estrategias dinámicas de forma intuitiva.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+---
+
+## 🚧 Estado del Proyecto: En Creación
+> Este proyecto se encuentra actualmente en su fase inicial de desarrollo (MVP).
+
+---
+
+## 🎯 Objetivos del Proyecto
+
+*  **Pizarra Dinámica:** Representación a escala de una cancha de rugby (100m x 70m).
+*  **Sistema de Animación:** Generación de secuencias de movimiento entre puntos clave.
+*  **Gestión de Equipos:** Control de 15 jugadores por equipo con numeración oficial.
+*  **Herramientas Visuales:** Flechas, líneas y anotaciones para detallar jugadas.
+
+## 🛠️ Stack Tecnológico
+
+*  **Core:** Vue.js 3.
+*  **Persistencia:** LocalStorage en formato JSON.
