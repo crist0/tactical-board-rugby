@@ -1,0 +1,218 @@
+# 🗺️ ROADMAP DEL PROYECTO
+## Tactical Board Rugby - Vue.js 3
+
+---
+
+## 📊 VISIÓN GENERAL
+
+El proyecto se dividirá en **8 FASES principales**, cada una con tareas específicas. Cada fase debe completarse y confirmarse antes de avanzar a la siguiente, y se realizará un commit de Git al finalizar cada fase.
+
+---
+
+## FASE 1: Configuración Inicial del Proyecto
+**Objetivo:** Establecer la base del proyecto Vue.js 3 con la estructura necesaria
+
+### Tareas:
+1. **1.1** - Crear proyecto Vue.js 3 con Vite #COMPLETE
+2. **1.2** - Configurar estructura de carpetas y componentes base
+3. **1.3** - Instalar dependencias necesarias (si aplica)
+4. **1.4** - Configurar Git e inicializar repositorio
+5. **1.5** - Crear layout básico de la aplicación (header, paneles, footer)
+6. **1.6** - Implementar sistema de paneles retráctiles (banquillo y línea de tiempo)
+
+**Entregable:** Estructura base del proyecto con layout responsive funcionando
+
+---
+
+## FASE 2: Canvas de la Cancha de Rugby
+**Objetivo:** Crear el área principal de trabajo con la cancha reglamentaria
+
+### Tareas:
+2. **2.1** - Crear componente Canvas para la cancha
+3. **2.2** - Implementar dibujo de líneas reglamentarias de rugby
+4. **2.3** - Mantener proporción 100x70 (responsive)
+5. **2.4** - Implementar sistema de Zoom (in/out) con controles
+6. **2.5** - Implementar pan/drag de la cancha cuando hay zoom
+7. **2.6** - Agregar indicadores visuales (coordenadas, grid opcional)
+
+**Entregable:** Cancha de rugby completamente dibujada con zoom funcional
+
+---
+
+## FASE 3: Sistema de Jugadores y Balón
+**Objetivo:** Crear los elementos interactivos (jugadores y balón) con drag & drop
+
+### Tareas:
+3. **3.1** - Crear componente Jugador (círculo con número)
+4. **3.2** - Crear componente Balón (óvalo)
+5. **3.3** - Implementar banquillo con 30 jugadores (15 por equipo) + balón
+6. **3.4** - Implementar drag & drop desde banquillo a cancha
+7. **3.5** - Implementar drag & drop dentro de la cancha
+8. **3.6** - Implementar devolución al banquillo (doble click y arrastrar)
+9. **3.7** - Implementar restricción: un jugador por número en cancha
+10. **3.8** - Implementar botón Reset (devolver todos al banquillo)
+11. **3.9** - Crear selectores de color para equipos A y B
+12. **3.10** - Balón siempre inicia en el centro de la cancha
+
+**Entregable:** Sistema completo de jugadores y balón interactivo con drag & drop
+
+---
+
+## FASE 4: Sistema de Vinculación Balón-Jugador
+**Objetivo:** Implementar la funcionalidad de "pegar" el balón a un jugador
+
+### Tareas:
+4. **4.1** - Implementar detección de proximidad balón-jugador
+5. **4.2** - Implementar resaltado visual cuando balón está cerca de jugador
+6. **4.3** - Implementar vinculación automática al soltar balón cerca
+7. **4.4** - Implementar indicador visual de balón vinculado (línea punteada/ícono)
+8. **4.5** - Implementar movimiento conjunto balón-jugador cuando están vinculados
+9. **4.6** - Implementar desvinculación al arrastrar balón lejos del jugador
+
+**Entregable:** Sistema completo de vinculación balón-jugador funcionando
+
+---
+
+## FASE 5: Sistema de Keyframes
+**Objetivo:** Crear el sistema para guardar estados (fotogramas) de la jugada
+
+### Tareas:
+5. **5.1** - Crear estructura de datos para keyframes
+6. **5.2** - Implementar botón [+ Keyframe] para guardar estado actual
+7. **5.3** - Guardar posiciones de todos los elementos (30 jugadores + balón)
+8. **5.4** - Crear componente de línea de tiempo (footer)
+9. **5.5** - Mostrar keyframes como bloques visuales en línea de tiempo
+10. **5.6** - Implementar navegación: click en keyframe para cargar
+11. **5.7** - Implementar botones anterior/siguiente keyframe
+12. **5.8** - Implementar playhead visual (indicador de posición actual)
+13. **5.9** - Implementar edición de keyframe existente
+14. **5.10** - Implementar eliminación de keyframe
+15. **5.11** - Implementar drag & drop para reordenar keyframes
+16. **5.12** - Implementar scroll horizontal en línea de tiempo
+
+**Entregable:** Sistema completo de keyframes con CRUD y navegación
+
+---
+
+## FASE 6: Sistema de Animación y Reproducción
+**Objetivo:** Animar la transición entre keyframes con controles de reproducción
+
+### Tareas:
+6. **6.1** - Implementar interpolación de posiciones entre keyframes
+7. **6.2** - Crear controles de reproducción (play/pause/stop)
+8. **6.3** - Implementar botones de navegación (primer/último frame)
+9. **6.4** - Implementar loop/repetición automática
+10. **6.5** - Crear selector de velocidad (0.5s, 1s, 1.5s, 2s, 3s)
+11. **6.6** - Implementar reproducción desde keyframe actual
+12. **6.7** - Implementar reproducción desde inicio
+13. **6.8** - Implementar navegación frame por frame manual
+14. **6.9** - Sincronizar playhead con reproducción
+
+**Entregable:** Sistema completo de animación y reproducción funcionando
+
+---
+
+## FASE 7: Herramientas de Anotación
+**Objetivo:** Agregar herramientas de dibujo (flechas, líneas, texto, marcadores)
+
+### Tareas:
+7. **7.1** - Crear panel de herramientas en sidebar izquierdo
+8. **7.2** - Implementar herramienta Flecha personalizada
+9. **7.3** - Implementar herramienta Línea libre
+10. **7.4** - Implementar herramienta Texto/Etiqueta
+11. **7.5** - Implementar herramienta Marcadores/Conos
+12. **7.6** - Crear panel de configuración dinámica por herramienta
+13. **7.7** - Implementar configuración: color personalizable
+14. **7.8** - Implementar configuración: grosor ajustable
+15. **7.9** - Implementar configuración: estilo de línea (sólido/punteado)
+16. **7.10** - Implementar configuración: tamaño de fuente (texto)
+17. **7.11** - Implementar configuración: tipos de marcadores
+18. **7.12** - Guardar anotaciones en keyframes
+19. **7.13** - Editar/eliminar anotaciones existentes
+20. **7.14** - Las anotaciones permanecen estáticas (no se animan)
+
+**Entregable:** Sistema completo de herramientas de anotación
+
+---
+
+## FASE 8: Trayectorias de Movimiento
+**Objetivo:** Visualizar el recorrido de elementos entre keyframes
+
+### Tareas:
+8. **8.1** - Crear toggle para mostrar/ocultar trayectorias
+9. **8.2** - Calcular trayectorias entre keyframes consecutivos
+10. **8.3** - Dibujar líneas discontinuas con flechas direccionales
+11. **8.4** - Aplicar color según elemento (jugador o balón)
+12. **8.5** - Implementar grosor mediano de línea
+13. **8.6** - Actualizar trayectorias cuando se modifican keyframes
+
+**Entregable:** Sistema de trayectorias visuales funcionando
+
+---
+
+## FASE 9: Gestión de Jugadas (LocalStorage)
+**Objetivo:** Guardar, cargar, exportar e importar jugadas completas
+
+### Tareas:
+9. **9.1** - Crear estructura de datos JSON para jugadas
+10. **9.2** - Implementar guardado en LocalStorage
+11. **9.3** - Implementar carga desde LocalStorage
+12. **9.4** - Crear dropdown de jugadas guardadas
+13. **9.5** - Implementar función "Nueva Jugada"
+14. **9.6** - Implementar función "Guardar Jugada" (con nombre)
+15. **9.7** - Implementar función "Cargar Jugada"
+16. **9.8** - Implementar función "Exportar" (descargar JSON)
+17. **9.9** - Implementar función "Importar" (subir JSON)
+18. **9.10** - Validación de datos importados
+19. **9.11** - Manejo de errores y edge cases
+
+**Entregable:** Sistema completo de persistencia de datos
+
+---
+
+## FASE 10: Pulido y Optimización
+**Objetivo:** Mejorar UX, performance y detalles finales
+
+### Tareas:
+10. **10.1** - Implementar feedback visual en todas las interacciones
+11. **10.2** - Agregar transiciones/animaciones suaves en UI
+12. **10.3** - Optimizar rendimiento del canvas
+13. **10.4** - Implementar estados de carga (loading states)
+14. **10.5** - Agregar mensajes de confirmación (eliminar, reset, etc.)
+15. **10.6** - Implementar atajos de teclado útiles
+16. **10.7** - Validaciones de formularios y campos
+17. **10.8** - Responsive final (mobile, tablet, desktop)
+18. **10.9** - Testing manual de flujos completos
+19. **10.10** - Documentación básica (README)
+
+**Entregable:** Aplicación completamente funcional, optimizada y documentada
+
+---
+
+## 📈 RESUMEN DE FASES
+
+| Fase | Nombre | Tareas | Complejidad |
+|------|--------|--------|-------------|
+| 1 | Configuración Inicial | 6 | Baja |
+| 2 | Canvas de Cancha | 6 | Media |
+| 3 | Jugadores y Balón | 10 | Alta |
+| 4 | Vinculación Balón-Jugador | 6 | Media |
+| 5 | Sistema de Keyframes | 12 | Alta |
+| 6 | Animación y Reproducción | 9 | Alta |
+| 7 | Herramientas de Anotación | 14 | Alta |
+| 8 | Trayectorias | 6 | Media |
+| 9 | Gestión de Jugadas | 11 | Media |
+| 10 | Pulido y Optimización | 10 | Media |
+
+**TOTAL: 10 Fases | 90 Tareas**
+
+---
+
+## 🎯 ESTRATEGIA DE COMMITS EN GIT
+
+- **Commit al finalizar cada FASE completa**
+- Mensaje de commit: `feat: [Nombre de la Fase] - descripción breve`
+- Ejemplo: `feat: FASE 3 - Sistema de Jugadores y Balón con drag & drop completo`
+
+---
+

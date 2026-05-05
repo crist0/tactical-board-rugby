@@ -1,31 +1,13 @@
-<script setup>
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
   <div id="app">
-    <RouterView />
+    <router-view />
   </div>
 </template>
 
-<style lang="scss">
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<script setup>
+// Main app component
+</script>
 
-#app {
-  min-height: 100vh;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    sans-serif;
-}
+<style lang="scss">
+//@import '@/assets/styles/global.scss';
 </style>

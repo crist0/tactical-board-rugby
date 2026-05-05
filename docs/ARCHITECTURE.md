@@ -1,0 +1,50 @@
+# Project Architecture
+
+## Overview
+Tactical Board Rugby is a Vue 3 application for creating and animating rugby plays using a keyframe-based system.
+
+## Technology Stack
+- **Framework:** Vue.js 3 (Composition API)
+- **Build Tool:** Vite
+- **State Management:** Pinia
+- **Styling:** SCSS
+- **Icons:** Lucide Vue
+- **Reactive Utilities:** @vueuse/core (reactivity, LocalStorage, and complex drag/drop interactions via `useDraggable`)
+- **Storage:** LocalStorage (future: IndexedDB)
+- **ID Generation:** Native Web API `crypto.randomUUID()` (no UUID library dependency)
+
+## Project Structure
+
+### /src/components
+Organized by feature/module:
+- **layout/** - Main layout components (header, sidebars, footer)
+- **field/** - Rugby field rendering components
+- **players/** - Player-related components
+- **ball/** - Ball component
+- **controls/** - UI controls (playback, zoom, etc.)
+- **annotations/** - Drawing tools (arrows, lines, text, markers)
+
+### /src/composables
+Reusable composition functions following Vue 3 best practices.
+
+### /src/stores
+Pinia stores for global state management:
+- **playStore** - Manages plays, keyframes, and element positions
+- **uiStore** - UI state (panels, zoom, tools)
+- **playbackStore** - Animation playback control
+
+### /src/utils
+Utility functions and constants.
+
+### /src/assets/styles
+Global styles and SCSS variables.
+
+## Design Principles
+1. **Component Organization:** By feature/module for better scalability
+2. **State Management:** Centralized with Pinia for complex state
+3. **Styling:** SCSS with global variables for consistency
+4. **Composition API:** Leverage Vue 3's composition API for logic reuse
+5. **Type Safety:** JSDoc comments for better IDE support (no TypeScript)
+
+## Development Phases
+See ROADMAP.txt for detailed phase breakdown.
