@@ -55,7 +55,8 @@ Collapsible bench and timeline panels are animated natively by transitioning CSS
 ### Rendering Strategy
 The field and tactical elements are rendered with a reactive DOM/Vue component approach rather than a native HTML5 `canvas`.
 This keeps element positioning and interaction workflows aligned with Vue reactivity for upcoming drag-and-drop behavior.
-Responsive scaling is handled natively in CSS with `aspect-ratio: 100 / 70`, preserving real-world rugby field proportions at all viewport sizes.
+Responsive scaling is handled natively in CSS with `aspect-ratio: 120 / 70`, mapped to a `1200 x 700` SVG viewBox.
+This dimension includes the 100m playing field plus two 10m in-goal areas while preserving real-world rugby proportions at all viewport sizes.
 
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.
