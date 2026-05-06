@@ -1,15 +1,20 @@
 <template>
   <div class="right-sidebar">
-    <!-- TODO: Phase 1, Task 1.5 - Implement right sidebar layout -->
+    <span class="label">Bench</span>
   </div>
 </template>
 
-<script setup>
-// Component logic will be implemented in Phase 1, Task 1.5
-</script>
-
 <style lang="scss" scoped>
 .right-sidebar {
-  // Styles will be added in Phase 1, Task 1.5
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff3db;
+  color: #7a4b00;
+}
+
+.label {
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 </style>

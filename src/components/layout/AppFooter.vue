@@ -1,16 +1,16 @@
 <template>
-  <div class="app-header">
-    <span class="label">Header</span>
+  <div class="app-footer">
+    <span class="label">Timeline</span>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.app-header {
+.app-footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #243447;
-  color: #f7fafc;
+  background-color: #1f2937;
+  color: #f3f4f6;
 }
 
 .label {

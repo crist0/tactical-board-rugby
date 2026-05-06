@@ -46,5 +46,10 @@ Global styles and SCSS variables.
 4. **Composition API:** Leverage Vue 3's composition API for logic reuse
 5. **Type Safety:** JSDoc comments for better IDE support (no TypeScript)
 
+### Layout Strategy
+The root application layout in `src/App.vue` follows a strict CSS Grid App Shell strategy.
+The shell is locked to `100vw` by `100vh` with `overflow: hidden`, which prevents page-level scrolling and keeps layout behavior deterministic.
+This ensures the center field canvas can expand and scale inside the available viewport space without pushing the full document beyond the screen.
+
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.

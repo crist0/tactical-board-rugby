@@ -1,16 +1,16 @@
 <template>
-  <div class="app-header">
-    <span class="label">Header</span>
+  <div class="field-center">
+    <span class="label">Field</span>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.app-header {
+.field-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #243447;
-  color: #f7fafc;
+  background-color: #dcfce7;
+  color: #166534;
 }
 
 .label {

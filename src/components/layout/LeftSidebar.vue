@@ -1,15 +1,20 @@
 <template>
   <div class="left-sidebar">
-    <!-- TODO: Phase 1, Task 1.5 - Implement left sidebar layout -->
+    <span class="label">Tools</span>
   </div>
 </template>
 
-<script setup>
-// Component logic will be implemented in Phase 1, Task 1.5
-</script>
-
 <style lang="scss" scoped>
 .left-sidebar {
-  // Styles will be added in Phase 1, Task 1.5
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9f2ff;
+  color: #1c3d6e;
+}
+
+.label {
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 </style>
