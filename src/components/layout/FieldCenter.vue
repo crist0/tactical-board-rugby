@@ -1,20 +1,24 @@
 <template>
   <div class="field-center">
-    <span class="label">Field</span>
+    <RugbyField class="field-surface" />
   </div>
 </template>
+
+<script setup>
+import RugbyField from '@/components/field/RugbyField.vue';
+</script>
 
 <style lang="scss" scoped>
 .field-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #dcfce7;
-  color: #166534;
+  padding: 20px;
+  overflow: hidden;
 }
 
-.label {
-  font-weight: 700;
-  letter-spacing: 0.03em;
+.field-surface {
+  max-width: 100%;
+  max-height: 100%;
 }
 </style>

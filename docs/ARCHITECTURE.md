@@ -52,5 +52,10 @@ The shell is locked to `100vw` by `100vh` with `overflow: hidden`, which prevent
 This ensures the center field canvas can expand and scale inside the available viewport space without pushing the full document beyond the screen.
 Collapsible bench and timeline panels are animated natively by transitioning CSS Grid track sizes (`grid-template-columns` and `grid-template-rows`) instead of relying on manual width/height animations.
 
+### Rendering Strategy
+The field and tactical elements are rendered with a reactive DOM/Vue component approach rather than a native HTML5 `canvas`.
+This keeps element positioning and interaction workflows aligned with Vue reactivity for upcoming drag-and-drop behavior.
+Responsive scaling is handled natively in CSS with `aspect-ratio: 100 / 70`, preserving real-world rugby field proportions at all viewport sizes.
+
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.
