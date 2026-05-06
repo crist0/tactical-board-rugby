@@ -55,8 +55,8 @@ npm run format
 - Follow BEM naming convention for classes
 
 ## Git Workflow
-- Commit at the end of each completed phase
-- Use conventional commit messages: `feat: [Phase X] - description`
+- Commit at the end of each completed TASK.
+- Use conventional commit messages: `feat/chore/fix: [Phase X - Task X.Y] - description` (e.g., `chore: [Phase 1 - Task 1.4] - Optimize gitignore and update commit strategy`).
 - Keep commits focused and atomic
 
 ## Code Quality
