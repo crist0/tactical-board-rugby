@@ -30,7 +30,7 @@ Reusable composition functions following Vue 3 best practices.
 ### /src/stores
 Pinia stores for global state management:
 - **playStore** - Manages plays, keyframes, and element positions
-- **uiStore** - UI state (panels, zoom, tools)
+- **uiStore** - UI shell state for panel visibility, including `isRightSidebarOpen` and `isTimelineOpen`
 - **playbackStore** - Animation playback control
 
 ### /src/utils
@@ -50,6 +50,7 @@ Global styles and SCSS variables.
 The root application layout in `src/App.vue` follows a strict CSS Grid App Shell strategy.
 The shell is locked to `100vw` by `100vh` with `overflow: hidden`, which prevents page-level scrolling and keeps layout behavior deterministic.
 This ensures the center field canvas can expand and scale inside the available viewport space without pushing the full document beyond the screen.
+Collapsible bench and timeline panels are animated natively by transitioning CSS Grid track sizes (`grid-template-columns` and `grid-template-rows`) instead of relying on manual width/height animations.
 
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.
