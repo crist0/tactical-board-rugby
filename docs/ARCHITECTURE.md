@@ -30,7 +30,7 @@ Reusable composition functions following Vue 3 best practices.
 ### /src/stores
 Pinia stores for global state management:
 - **playStore** - Manages plays, keyframes, and element positions
-- **uiStore** - UI shell state for panel visibility (`isRightSidebarOpen`, `isTimelineOpen`) and zoom (`zoomLevel`, constrained from 1.0x to 3.0x)
+- **uiStore** - UI shell state for panel visibility (`isRightSidebarOpen`, `isTimelineOpen`), zoom (`zoomLevel`, constrained from 1.0x to 3.0x), and pan (`panX`, `panY`) for drag navigation
 - **playbackStore** - Animation playback control
 
 ### /src/utils
@@ -57,7 +57,8 @@ The field and tactical elements are rendered with a reactive DOM/Vue component a
 This keeps element positioning and interaction workflows aligned with Vue reactivity for upcoming drag-and-drop behavior.
 Responsive scaling is handled natively in CSS with `aspect-ratio: 124 / 74`, mapped to a `1240 x 740` SVG viewBox.
 This dimension includes the 100m playing field, two 10m in-goal areas, and a 2m run-off boundary on all sides while preserving real-world rugby proportions at all viewport sizes.
-The zoom system is centralized in `uiStore` and applied to the field container through CSS `transform: scale()`, constrained between `1.0x` and `3.0x`.
+The zoom system is centralized in `uiStore` and applied to the field container through CSS transforms, constrained between `1.0x` and `3.0x`.
+`uiStore` also manages drag pan coordinates (`panX`, `panY`), with strict mathematical clamping based on current `zoomLevel` and container dimensions to prevent dragging the field out of the visible viewport.
 
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.

@@ -8,6 +8,9 @@ export const useUiStore = defineStore('ui', {
     minZoom: 1.0,
     maxZoom: 3.0,
     zoomStep: 0.25,
+    panX: 0,
+    panY: 0,
+    isDragging: false,
   }),
   actions: {
     toggleRightSidebar() {
@@ -24,6 +27,12 @@ export const useUiStore = defineStore('ui', {
     },
     resetZoom() {
       this.zoomLevel = 1.0;
+      this.panX = 0;
+      this.panY = 0;
+    },
+    setPan(x, y) {
+      this.panX = x;
+      this.panY = y;
     },
   },
 });
