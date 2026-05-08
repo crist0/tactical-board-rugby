@@ -1,5 +1,5 @@
 <template>
-  <svg class="field-lines" viewBox="0 0 1240 740" aria-hidden="true">
+  <svg ref="svgElement" class="field-lines" viewBox="0 0 1240 740" aria-hidden="true">
     <!-- Outer run-off area -->
     <rect x="0" y="0" width="1240" height="740" class="runoff-area" />
 
@@ -75,6 +75,16 @@
     <line x1="1116" y1="370" x2="1120" y2="370" class="goal-post" />
   </svg>
 </template>
+
+<script setup>
+import { ref } from 'vue';
+
+const svgElement = ref(null);
+
+defineExpose({
+  svgElement,
+});
+</script>
 
 <style lang="scss" scoped>
 .runoff-area {

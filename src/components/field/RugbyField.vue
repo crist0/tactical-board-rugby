@@ -1,26 +1,38 @@
 <template>
   <div
-    ref="fieldRef"
-    class="rugby-field"
-    :class="{ 'is-dragging': uiStore.isDragging }"
-    :style="fieldStyles"
-    @mousedown.prevent="handleMouseDown"
+    class="rugby-field-wrapper"
     @mousemove="handleMouseMove"
     @mouseup="handleMouseUp"
-    @mouseleave="handleMouseUp"
+    @mouseleave="handleMouseLeave"
     @wheel.prevent="handleWheel"
   >
-    <FieldLines />
+    <div
+      ref="fieldRef"
+      class="rugby-field"
+      :class="{ 'is-dragging': uiStore.isDragging }"
+      :style="fieldStyles"
+      @mousedown.prevent="handleMouseDown"
+    >
+      <FieldLines ref="fieldLinesRef" />
+      <FieldGrid />
+    </div>
+    <div v-if="cursorX !== null && cursorY !== null" class="cursor-coordinates">
+      X: {{ cursorX }}m | Y: {{ cursorY }}m
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue';
 import FieldLines from '@/components/field/FieldLines.vue';
+import FieldGrid from '@/components/field/FieldGrid.vue';
 import { useUiStore } from '@/stores/uiStore';
 
 const uiStore = useUiStore();
 const fieldRef = ref(null);
+const fieldLinesRef = ref(null);
+const cursorX = ref(null);
+const cursorY = ref(null);
 
 const getMaxPanBounds = () => {
   const el = fieldRef.value;
@@ -57,6 +69,26 @@ const handleMouseDown = (event) => {
 };
 
 const handleMouseMove = (event) => {
+  const svgElement = fieldLinesRef.value?.svgElement;
+  const ctm = svgElement?.getScreenCTM?.();
+  if (svgElement && ctm) {
+    const point = svgElement.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const svgP = point.matrixTransform(ctm.inverse());
+
+    if (svgP.x < 120 || svgP.x > 1120 || svgP.y < 20 || svgP.y > 720) {
+      cursorX.value = null;
+      cursorY.value = null;
+    } else {
+      cursorX.value = ((svgP.x - 120) / 10).toFixed(1);
+      cursorY.value = ((svgP.y - 20) / 10).toFixed(1);
+    }
+  } else {
+    cursorX.value = null;
+    cursorY.value = null;
+  }
+
   if (!uiStore.isDragging || uiStore.zoomLevel <= 1) {
     return;
   }
@@ -69,6 +101,12 @@ const handleMouseMove = (event) => {
 
 const handleMouseUp = () => {
   uiStore.isDragging = false;
+};
+
+const handleMouseLeave = () => {
+  uiStore.isDragging = false;
+  cursorX.value = null;
+  cursorY.value = null;
 };
 
 const handleWheel = (event) => {
@@ -147,7 +185,28 @@ watch(
   user-select: none;
 }
 
+.rugby-field-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+
 .is-dragging {
   transition: none !important;
+}
+
+.cursor-coordinates {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: rgba(15, 23, 42, 0.78);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  pointer-events: none;
 }
 </style>

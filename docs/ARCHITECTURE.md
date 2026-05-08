@@ -60,5 +60,17 @@ This dimension includes the 100m playing field, two 10m in-goal areas, and a 2m 
 The zoom system is centralized in `uiStore` and applied to the field container through CSS transforms, constrained between `1.0x` and `3.0x`.
 `uiStore` also manages drag pan coordinates (`panX`, `panY`), with strict mathematical clamping based on current `zoomLevel` and container dimensions to prevent dragging the field out of the visible viewport.
 
+#### Visual Indicators
+Optional visual overlays are rendered as independent SVG layers so they remain synchronized with field scaling and panning.
+`FieldGrid.vue` implements a 5m alignment grid over the playable and in-goal area only (`x: 20 -> 1220`, `y: 20 -> 720`) using 50-unit spacing on the `1240 x 740` field coordinate system.
+Grid visibility is controlled globally in Pinia by `uiStore.showGrid`, toggled through `uiStore.toggleGrid()`.
+
+Hover coordinates are computed in real-world meters from the field SVG space with this mapping:
+- `1m = 10 SVG units`
+- `xMeters = (svgX - 20) / 10`
+- `yMeters = (svgY - 20) / 10`
+
+The `20`-unit offset accounts for the run-off boundary before the playable/in-goal region begins, so displayed coordinates align with rugby field measurement origin at the top-left of the in-bounds field area.
+
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.
