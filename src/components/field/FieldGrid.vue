@@ -1,5 +1,5 @@
 <template>
-  <svg v-if="uiStore.showGrid" class="field-grid" viewBox="0 0 1240 740" aria-hidden="true">
+  <g v-if="uiStore.showGrid" class="field-grid" aria-hidden="true">
     <line
       v-for="x in verticalLines"
       :key="`v-${x}`"
@@ -18,7 +18,7 @@
       :y2="y"
       class="grid-line"
     />
-  </svg>
+  </g>
 </template>
 
 <script setup>
@@ -30,14 +30,6 @@ const horizontalLines = Array.from({ length: 15 }, (_, index) => 20 + index * 50
 </script>
 
 <style lang="scss" scoped>
-.field-grid {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
 .grid-line {
   stroke: #ffffff;
   stroke-opacity: 0.05;

@@ -11,6 +11,19 @@
       <Grid3x3 :size="16" />
       <span>Grid</span>
     </button>
+    <div class="size-control">
+      <label class="size-label" for="element-size">Element Size: {{ uiStore.playerSize.toFixed(1) }}m</label>
+      <input
+        id="element-size"
+        class="size-slider"
+        type="range"
+        min="1"
+        max="5"
+        step="0.1"
+        :value="uiStore.playerSize"
+        @input="handleSizeInput"
+      />
+    </div>
     <ZoomControls class="zoom-controls-slot" />
   </div>
 </template>
@@ -21,6 +34,13 @@ import ZoomControls from '@/components/controls/ZoomControls.vue';
 import { useUiStore } from '@/stores/uiStore';
 
 const uiStore = useUiStore();
+
+const handleSizeInput = (event) => {
+  const nextSize = Number.parseFloat(event.target.value);
+  if (!Number.isNaN(nextSize)) {
+    uiStore.setPlayerSize(nextSize);
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -58,6 +78,22 @@ const uiStore = useUiStore();
   background-color: #1c3d6e;
   border-color: #1c3d6e;
   color: #ffffff;
+}
+
+.size-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.size-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c3d6e;
+}
+
+.size-slider {
+  width: 100%;
 }
 
 .zoom-controls-slot {

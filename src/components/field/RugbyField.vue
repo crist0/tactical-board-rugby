@@ -11,10 +11,46 @@
       class="rugby-field"
       :class="{ 'is-dragging': uiStore.isDragging }"
       :style="fieldStyles"
-      @mousedown.prevent="handleMouseDown"
     >
-      <FieldLines ref="fieldLinesRef" />
-      <FieldGrid />
+      <svg
+        ref="svgRef"
+        class="field-svg"
+        viewBox="0 0 1240 740"
+        @mousedown.prevent="handleMouseDown"
+        @dragover.prevent
+        @drop="handleDrop"
+      >
+        <FieldLines />
+        <FieldGrid />
+        <g id="field-elements">
+          <foreignObject
+            v-for="player in fieldPlayers"
+            :key="player.id"
+            :x="player.x - elementSizeUnits / 2"
+            :y="player.y - elementSizeUnits / 2"
+            :width="elementSizeUnits"
+            :height="elementSizeUnits"
+            @mousedown.stop.prevent="startElementDrag($event, player, 'player')"
+          >
+            <div class="field-element-wrapper">
+              <Player :player="player" />
+            </div>
+          </foreignObject>
+
+          <foreignObject
+            v-if="fieldBall"
+            :x="fieldBall.x - elementSizeUnits / 2"
+            :y="fieldBall.y - elementSizeUnits / 2"
+            :width="elementSizeUnits"
+            :height="elementSizeUnits"
+            @mousedown.stop.prevent="startElementDrag($event, fieldBall, 'ball')"
+          >
+            <div class="field-element-wrapper field-element-wrapper--ball">
+              <Ball :ball="fieldBall" />
+            </div>
+          </foreignObject>
+        </g>
+      </svg>
     </div>
     <div v-if="cursorX !== null && cursorY !== null" class="cursor-coordinates">
       X: {{ cursorX }}m | Y: {{ cursorY }}m
@@ -23,16 +59,39 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import FieldLines from '@/components/field/FieldLines.vue';
 import FieldGrid from '@/components/field/FieldGrid.vue';
+import Player from '@/components/players/Player.vue';
+import Ball from '@/components/ball/Ball.vue';
+import { usePlayStore } from '@/stores/playStore';
 import { useUiStore } from '@/stores/uiStore';
 
 const uiStore = useUiStore();
+const playStore = usePlayStore();
 const fieldRef = ref(null);
-const fieldLinesRef = ref(null);
+const svgRef = ref(null);
 const cursorX = ref(null);
 const cursorY = ref(null);
+const draggedElement = ref(null);
+const dragOffset = ref({ x: 0, y: 0 });
+
+const elementSizeUnits = computed(() => uiStore.playerSize * 10);
+const fieldPlayers = computed(() => playStore.players.filter((player) => player.location === 'field'));
+const fieldBall = computed(() => (playStore.ball.location === 'field' ? playStore.ball : null));
+
+const getSvgPointFromEvent = (event) => {
+  const svg = svgRef.value;
+  const ctm = svg?.getScreenCTM?.();
+  if (!svg || !ctm) {
+    return null;
+  }
+
+  const point = svg.createSVGPoint();
+  point.x = event.clientX;
+  point.y = event.clientY;
+  return point.matrixTransform(ctm.inverse());
+};
 
 const getMaxPanBounds = () => {
   const el = fieldRef.value;
@@ -69,14 +128,8 @@ const handleMouseDown = (event) => {
 };
 
 const handleMouseMove = (event) => {
-  const svgElement = fieldLinesRef.value?.svgElement;
-  const ctm = svgElement?.getScreenCTM?.();
-  if (svgElement && ctm) {
-    const point = svgElement.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const svgP = point.matrixTransform(ctm.inverse());
-
+  const svgP = getSvgPointFromEvent(event);
+  if (svgP) {
     if (svgP.x < 120 || svgP.x > 1120 || svgP.y < 20 || svgP.y > 720) {
       cursorX.value = null;
       cursorY.value = null;
@@ -87,6 +140,10 @@ const handleMouseMove = (event) => {
   } else {
     cursorX.value = null;
     cursorY.value = null;
+  }
+
+  if (draggedElement.value) {
+    return;
   }
 
   if (!uiStore.isDragging || uiStore.zoomLevel <= 1) {
@@ -101,6 +158,7 @@ const handleMouseMove = (event) => {
 
 const handleMouseUp = () => {
   uiStore.isDragging = false;
+  draggedElement.value = null;
 };
 
 const handleMouseLeave = () => {
@@ -145,6 +203,65 @@ const handleWheel = (event) => {
   uiStore.setPan(clamped.x, clamped.y);
 };
 
+const handleDrop = (event) => {
+  const payload = event.dataTransfer?.getData('text/plain');
+  if (!payload) {
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(payload);
+  } catch {
+    return;
+  }
+
+  const svgP = getSvgPointFromEvent(event);
+  if (!svgP || !parsed?.id || !parsed?.type) {
+    return;
+  }
+
+  playStore.moveItemToField(parsed.type, parsed.id, svgP.x, svgP.y);
+};
+
+const startElementDrag = (event, item, type) => {
+  const svgP = getSvgPointFromEvent(event);
+  if (!svgP) {
+    return;
+  }
+
+  dragOffset.value = {
+    x: svgP.x - item.x,
+    y: svgP.y - item.y,
+  };
+  draggedElement.value = {
+    id: item.id,
+    type,
+  };
+};
+
+const handleGlobalMouseMove = (event) => {
+  if (!draggedElement.value) {
+    return;
+  }
+
+  const svgP = getSvgPointFromEvent(event);
+  if (!svgP) {
+    return;
+  }
+
+  playStore.updateItemPosition(
+    draggedElement.value.type,
+    draggedElement.value.id,
+    svgP.x - dragOffset.value.x,
+    svgP.y - dragOffset.value.y
+  );
+};
+
+const handleGlobalMouseUp = () => {
+  draggedElement.value = null;
+};
+
 const fieldCursor = computed(() => {
   if (uiStore.zoomLevel <= 1) {
     return 'default';
@@ -169,6 +286,16 @@ watch(
     }
   }
 );
+
+onMounted(() => {
+  window.addEventListener('mousemove', handleGlobalMouseMove);
+  window.addEventListener('mouseup', handleGlobalMouseUp);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('mousemove', handleGlobalMouseMove);
+  window.removeEventListener('mouseup', handleGlobalMouseUp);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -183,6 +310,12 @@ watch(
   transform-origin: center center;
   transition: transform 0.2s ease-in-out;
   user-select: none;
+}
+
+.field-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .rugby-field-wrapper {
@@ -208,5 +341,15 @@ watch(
   font-weight: 500;
   letter-spacing: 0.01em;
   pointer-events: none;
+}
+
+.field-element-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.field-element-wrapper--ball {
+  padding: 10%;
+  box-sizing: border-box;
 }
 </style>

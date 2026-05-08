@@ -3,21 +3,39 @@
     <section class="bench-section">
       <h3 class="section-title">Team A Bench</h3>
       <div class="bench-grid">
-        <Player v-for="player in teamABenchPlayers" :key="player.id" :player="player" />
+        <div
+          v-for="player in teamABenchPlayers"
+          :key="player.id"
+          class="bench-item bench-item--player"
+          draggable="true"
+          @dragstart="handleDragStart($event, player, 'player')"
+        >
+          <Player :player="player" />
+        </div>
       </div>
     </section>
 
     <section class="bench-section">
       <h3 class="section-title">Team B Bench</h3>
       <div class="bench-grid">
-        <Player v-for="player in teamBBenchPlayers" :key="player.id" :player="player" />
+        <div
+          v-for="player in teamBBenchPlayers"
+          :key="player.id"
+          class="bench-item bench-item--player"
+          draggable="true"
+          @dragstart="handleDragStart($event, player, 'player')"
+        >
+          <Player :player="player" />
+        </div>
       </div>
     </section>
 
-    <section class="bench-section">
+    <section v-if="showBenchBall" class="bench-section">
       <h3 class="section-title">Ball</h3>
       <div class="ball-slot">
-        <Ball :ball="playStore.ball" />
+        <div class="bench-item bench-item--ball" draggable="true" @dragstart="handleDragStart($event, playStore.ball, 'ball')">
+          <Ball :ball="playStore.ball" />
+        </div>
       </div>
     </section>
   </div>
@@ -38,6 +56,18 @@ const teamABenchPlayers = computed(() =>
 const teamBBenchPlayers = computed(() =>
   playStore.players.filter((player) => player.team === 'B' && player.location === 'bench')
 );
+
+const showBenchBall = computed(() => playStore.ball.location !== 'field');
+
+const handleDragStart = (event, item, type) => {
+  event.dataTransfer.setData(
+    'text/plain',
+    JSON.stringify({
+      id: item.id,
+      type,
+    })
+  );
+};
 </script>
 
 <style lang="scss" scoped>
@@ -76,5 +106,19 @@ const teamBBenchPlayers = computed(() =>
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.bench-item {
+  cursor: grab;
+}
+
+.bench-item--player {
+  width: 28px;
+  height: 28px;
+}
+
+.bench-item--ball {
+  width: 18px;
+  height: 28px;
 }
 </style>
