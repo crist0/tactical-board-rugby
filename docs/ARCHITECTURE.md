@@ -91,11 +91,11 @@ The `20`-unit offset accounts for the run-off boundary before the playable/in-go
 - `y: number`
 - `color: string` (`#ffffff`)
 
-`src/stores/uiStore.js` also controls dynamic tactical element sizing via `playerSize` (meters). Element render size is converted to SVG units at runtime with `sizeUnits = playerSize * 10`, preserving the global mapping `1m = 10 units`.
+`src/stores/uiStore.js` also controls dynamic tactical element sizing. 1 Meter = 10 SVG Units. Element size is controlled globally via uiStore.playerSize, where the value directly maps to SVG units (Value * 10).
 
 ### Drag & Drop Strategy
 The board uses a hybrid approach for drag interactions:
-- **Bench -> Field:** Native HTML5 drag and drop (`dragstart`, `dataTransfer`, `drop`) is used to move a player or the ball from bench components into field coordinates.
+- **Bench -> Field:** Native HTML5 drag and drop (`dragstart`, `dataTransfer`, `drop`) is used to move a player or the ball from bench components into field coordinates. To ensure a clean, circular drag preview without the browser's default square background, a custom drag image is generated on `dragstart`. A clone of the dragged element is created, styled with a transparent background, appended to the body, and then set as the drag image using `event.dataTransfer.setDragImage()`. The cloned element is removed from the body immediately after.
 - **In-Field Movement:** Custom mouse-event dragging is used for smooth frame-by-frame repositioning (`mousedown` on element, global `mousemove`/`mouseup`) with all pointer coordinates converted through SVG matrices (`getScreenCTM().inverse()`).
 
 Field tactical elements are rendered inside the field SVG through `<foreignObject>` nodes under `#field-elements`, allowing Vue component visuals (`Player.vue`, `Ball.vue`) to stay consistent while their positions remain in SVG coordinate space.

@@ -5,6 +5,7 @@ export const useUiStore = defineStore('ui', {
     isRightSidebarOpen: true,
     isTimelineOpen: true,
     showGrid: false,
+    playerSize: 3,
     zoomLevel: 1.0,
     minZoom: 1.0,
     maxZoom: 3.0,
@@ -22,6 +23,9 @@ export const useUiStore = defineStore('ui', {
     },
     toggleGrid() {
       this.showGrid = !this.showGrid;
+    },
+    setPlayerSize(size) {
+      this.playerSize = size;
     },
     zoomIn() {
       this.zoomLevel = Math.min(this.zoomLevel + this.zoomStep, this.maxZoom);

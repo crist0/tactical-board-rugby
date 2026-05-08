@@ -30,4 +30,40 @@ export const usePlayStore = defineStore('play', {
       color: '#ffffff',
     },
   }),
+  actions: {
+    moveItemToField(itemType, id, x, y) {
+      if (itemType === 'player') {
+        const player = this.players.find((entry) => entry.id === id);
+        if (!player) {
+          return;
+        }
+        player.location = 'field';
+        player.x = x;
+        player.y = y;
+        return;
+      }
+
+      if (itemType === 'ball' && this.ball.id === id) {
+        this.ball.location = 'field';
+        this.ball.x = x;
+        this.ball.y = y;
+      }
+    },
+    updateItemPosition(itemType, id, x, y) {
+      if (itemType === 'player') {
+        const player = this.players.find((entry) => entry.id === id);
+        if (!player) {
+          return;
+        }
+        player.x = x;
+        player.y = y;
+        return;
+      }
+
+      if (itemType === 'ball' && this.ball.id === id) {
+        this.ball.x = x;
+        this.ball.y = y;
+      }
+    },
+  },
 });

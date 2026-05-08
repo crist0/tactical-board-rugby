@@ -12,7 +12,7 @@
       <span>Grid</span>
     </button>
     <div class="size-control">
-      <label class="size-label" for="element-size">Element Size: {{ uiStore.playerSize.toFixed(1) }}m</label>
+      <label class="size-label" for="element-size">Size: {{ uiStore.playerSize.toFixed(1) }} meters</label>
       <input
         id="element-size"
         class="size-slider"

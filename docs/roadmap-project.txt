@@ -9,7 +9,7 @@ El proyecto se dividirá en **8 FASES principales**, cada una con tareas especí
 
 ---
 
-## FASE 1: Configuración Inicial del Proyecto
+## FASE 1: Configuración Inicial del Proyecto #COMPLETE
 **Objetivo:** Establecer la base del proyecto Vue.js 3 con la estructura necesaria
 
 ### Tareas:
@@ -17,23 +17,23 @@ El proyecto se dividirá en **8 FASES principales**, cada una con tareas especí
 2. **1.2** - Configurar estructura de carpetas y componentes base #COMPLETE
 3. **1.3** - Instalar dependencias necesarias (si aplica) #COMPLETE
 4. **1.4** - Configurar Git e inicializar repositorio #COMPLETE
-5. **1.5** - Crear layout básico de la aplicación (header, paneles, footer)
-6. **1.6** - Implementar sistema de paneles retráctiles (banquillo y línea de tiempo)
+5. **1.5** - Crear layout básico de la aplicación (header, paneles, footer) #COMPLETE
+6. **1.6** - Implementar sistema de paneles retráctiles (banquillo y línea de tiempo) #COMPLETE
 
 **Entregable:** Estructura base del proyecto con layout responsive funcionando
 
 ---
 
-## FASE 2: Canvas de la Cancha de Rugby
+## FASE 2: Canvas de la Cancha de Rugby #COMPLETE
 **Objetivo:** Crear el área principal de trabajo con la cancha reglamentaria
 
 ### Tareas:
-2. **2.1** - Crear componente Canvas para la cancha
-3. **2.2** - Implementar dibujo de líneas reglamentarias de rugby
-4. **2.3** - Mantener proporción 100x70 (responsive)
-5. **2.4** - Implementar sistema de Zoom (in/out) con controles
-6. **2.5** - Implementar pan/drag de la cancha cuando hay zoom
-7. **2.6** - Agregar indicadores visuales (coordenadas, grid opcional)
+2. **2.1** - Crear componente Canvas para la cancha #COMPLETE
+3. **2.2** - Implementar dibujo de líneas reglamentarias de rugby #COMPLETE
+4. **2.3** - Mantener proporción 100x70 (responsive) #COMPLETE
+5. **2.4** - Implementar sistema de Zoom (in/out) con controles #COMPLETE
+6. **2.5** - Implementar pan/drag de la cancha cuando hay zoom #COMPLETE
+7. **2.6** - Agregar indicadores visuales (coordenadas, grid opcional) #COMPLETE
 
 **Entregable:** Cancha de rugby completamente dibujada con zoom funcional
 
@@ -43,12 +43,12 @@ El proyecto se dividirá en **8 FASES principales**, cada una con tareas especí
 **Objetivo:** Crear los elementos interactivos (jugadores y balón) con drag & drop
 
 ### Tareas:
-3. **3.1** - Crear componente Jugador (círculo con número)
-4. **3.2** - Crear componente Balón (óvalo)
-5. **3.3** - Implementar banquillo con 30 jugadores (15 por equipo) + balón
-6. **3.4** - Implementar drag & drop desde banquillo a cancha
-7. **3.5** - Implementar drag & drop dentro de la cancha
-8. **3.6** - Implementar devolución al banquillo (doble click y arrastrar)
+3. **3.1** - Crear componente Jugador (círculo con número) #COMPLETE
+4. **3.2** - Crear componente Balón (óvalo) #COMPLETE
+5. **3.3** - Implementar banquillo con 30 jugadores (15 por equipo) + balón #COMPLETE
+6. **3.4** - Implementar drag & drop desde banquillo a cancha #COMPLETE
+7. **3.5** - Implementar drag & drop dentro de la cancha #COMPLETE
+8. **3.6** - Implementar devolución al banquillo (doble click y arrastrar) #IN-PROGRESS (Note: Partially implemented, needs corrections based on SVG coordinate system)
 9. **3.7** - Implementar restricción: un jugador por número en cancha
 10. **3.8** - Implementar botón Reset (devolver todos al banquillo)
 11. **3.9** - Crear selectores de color para equipos A y B

@@ -67,6 +67,21 @@ const handleDragStart = (event, item, type) => {
       type,
     })
   );
+
+  // Create a clean clone for the drag image
+  const dragImage = event.target.cloneNode(true);
+  dragImage.style.position = 'absolute';
+  dragImage.style.top = '-1000px'; // Position off-screen
+  dragImage.style.background = 'transparent';
+  document.body.appendChild(dragImage);
+
+  // Set the custom drag image
+  event.dataTransfer.setDragImage(dragImage, event.target.offsetWidth / 2, event.target.offsetHeight / 2);
+
+  // Clean up the cloned element
+  setTimeout(() => {
+    document.body.removeChild(dragImage);
+  }, 0);
 };
 </script>
 
@@ -110,15 +125,23 @@ const handleDragStart = (event, item, type) => {
 
 .bench-item {
   cursor: grab;
+  background: transparent !important;
+  border: none;
+  padding: 0;
+  border-radius: 50%;
 }
 
 .bench-item--player {
   width: 28px;
   height: 28px;
+  border-radius: 50%;
+  background: transparent;
 }
 
 .bench-item--ball {
   width: 18px;
   height: 28px;
+  border-radius: 50%;
+  background: transparent;
 }
 </style>

@@ -24,25 +24,26 @@
         <FieldGrid />
         <g id="field-elements">
           <foreignObject
-            v-for="player in fieldPlayers"
-            :key="player.id"
-            :x="player.x - elementSizeUnits / 2"
-            :y="player.y - elementSizeUnits / 2"
-            :width="elementSizeUnits"
-            :height="elementSizeUnits"
-            @mousedown.stop.prevent="startElementDrag($event, player, 'player')"
+            v-for="item in fieldPlayers"
+            :key="item.id"
+            :x="item.x - playerSizeInUnits.width / 2"
+            :y="item.y - playerSizeInUnits.height / 2"
+            :width="playerSizeInUnits.width"
+            :height="playerSizeInUnits.height"
+            @mousedown.stop.prevent="startElementDrag($event, item, 'player')"
           >
             <div class="field-element-wrapper">
-              <Player :player="player" />
+              <Player :player="item" />
             </div>
           </foreignObject>
 
           <foreignObject
             v-if="fieldBall"
-            :x="fieldBall.x - elementSizeUnits / 2"
-            :y="fieldBall.y - elementSizeUnits / 2"
-            :width="elementSizeUnits"
-            :height="elementSizeUnits"
+            :key="fieldBall.id"
+            :x="fieldBall.x - ballSizeInUnits.width / 2"
+            :y="fieldBall.y - ballSizeInUnits.height / 2"
+            :width="ballSizeInUnits.width"
+            :height="ballSizeInUnits.height"
             @mousedown.stop.prevent="startElementDrag($event, fieldBall, 'ball')"
           >
             <div class="field-element-wrapper field-element-wrapper--ball">
@@ -76,7 +77,22 @@ const cursorY = ref(null);
 const draggedElement = ref(null);
 const dragOffset = ref({ x: 0, y: 0 });
 
-const elementSizeUnits = computed(() => uiStore.playerSize * 10);
+const playerSizeInUnits = computed(() => {
+  const size = uiStore.playerSize * 10;
+  return {
+    width: size,
+    height: size,
+  };
+});
+
+const ballSizeInUnits = computed(() => {
+  const height = uiStore.playerSize * 10;
+  return {
+    width: height / 1.5,
+    height,
+  };
+});
+
 const fieldPlayers = computed(() => playStore.players.filter((player) => player.location === 'field'));
 const fieldBall = computed(() => (playStore.ball.location === 'field' ? playStore.ball : null));
 
