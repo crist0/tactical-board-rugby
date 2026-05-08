@@ -29,7 +29,7 @@ Reusable composition functions following Vue 3 best practices.
 
 ### /src/stores
 Pinia stores for global state management:
-- **playStore** - Manages plays, keyframes, and element positions
+- **playStore** - Manages players and ball state as the canonical tactical element model (bench/field location + coordinates)
 - **uiStore** - UI shell state for panel visibility (`isRightSidebarOpen`, `isTimelineOpen`), zoom (`zoomLevel`, constrained from 1.0x to 3.0x), and pan (`panX`, `panY`) for drag navigation
 - **playbackStore** - Animation playback control
 
@@ -71,6 +71,25 @@ Hover coordinates are computed in real-world meters from the field SVG space wit
 - `yMeters = (svgY - 20) / 10`
 
 The `20`-unit offset accounts for the run-off boundary before the playable/in-goal region begins, so displayed coordinates align with rugby field measurement origin at the top-left of the in-bounds field area.
+
+### Data Models & playStore
+`src/stores/playStore.js` is the single source of truth for tactical element state, including each element's coordinates (`x`, `y`) and placement status (`location`, e.g. `'bench'` or `'field'`).
+
+`Player` model:
+- `id: string` (`A1` -> `A15`, `B1` -> `B15`)
+- `number: number` (`1` -> `15`)
+- `team: 'A' | 'B'`
+- `color: string` (Team A `#0055ff`, Team B `#ff2222`)
+- `location: 'bench' | 'field'`
+- `x: number`
+- `y: number`
+
+`Ball` model:
+- `id: 'ball'`
+- `location: string` (initialized as `'center'`)
+- `x: number`
+- `y: number`
+- `color: string` (`#ffffff`)
 
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.
