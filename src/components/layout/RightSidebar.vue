@@ -45,6 +45,15 @@
         </div>
       </div>
     </section>
+
+    <section class="reset-section">
+      <div v-if="showConfirmReset" class="reset-confirm">
+        <p>Are you sure?</p>
+        <button @click="confirmReset(true)" class="confirm-btn confirm-btn--yes">Yes</button>
+        <button @click="confirmReset(false)" class="confirm-btn confirm-btn--no">No</button>
+      </div>
+      <button v-else @click="handleResetClick" class="reset-btn">Reset Board</button>
+    </section>
   </div>
 </template>
 
@@ -55,6 +64,7 @@ import Ball from "@/components/ball/Ball.vue";
 import { usePlayStore } from "@/stores/playStore";
 
 const playStore = usePlayStore();
+const showConfirmReset = ref(false);
 
 /**
  * @returns {Array} The players of team A.
@@ -114,6 +124,24 @@ const handleDoubleClick = (item, type) => {
   if (item.location === 'field') {
     playStore.returnToBench(type, item.id);
   }
+};
+
+/**
+ * Shows the confirmation dialog for resetting the board.
+ */
+const handleResetClick = () => {
+  showConfirmReset.value = true;
+};
+
+/**
+ * Handles the confirmation of resetting the board.
+ * @param {boolean} confirmed - Whether the user confirmed the reset.
+ */
+const confirmReset = (confirmed) => {
+  if (confirmed) {
+    playStore.resetBoard();
+  }
+  showConfirmReset.value = false;
 };
 </script>
 
@@ -185,5 +213,50 @@ const handleDoubleClick = (item, type) => {
   height: 28px;
   border-radius: 50%;
   background: transparent;
+}
+
+.reset-section {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #e0c9a6;
+}
+
+.reset-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background-color: #f0e6d2;
+  color: #7a4b00;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.reset-confirm {
+  text-align: center;
+  font-size: 12px;
+
+  p {
+    margin: 0 0 8px;
+  }
+}
+
+.confirm-btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin: 0 4px;
+}
+
+.confirm-btn--yes {
+  background-color: #d9534f;
+  color: white;
+}
+
+.confirm-btn--no {
+  background-color: #ccc;
 }
 </style>

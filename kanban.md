@@ -23,8 +23,8 @@
 - [x] 3.4 - Implementar drag & drop desde banquillo a cancha
 - [x] 3.5 - Implementar drag & drop dentro de la cancha - COMPLETED
 - [/] 3.6 - Implementar devolución al banquillo (doble click y arrastrar) - IN PROGRESS (Note: Partially implemented, needs corrections based on SVG coordinate system)
-- [ ] 3.7 - Implementar restricción: un jugador por número en cancha
-- [ ] 3.8 - Implementar botón Reset (devolver todos al banquillo)
+- [x] 3.7 - Implementar restricción: un jugador por número en cancha
+- [x] 3.8 - Implementar botón Reset (devolver todos al banquillo)
 - [ ] 3.9 - Crear selectores de color para equipos A y B
 - [ ] 3.10 - Balón siempre inicia en el centro de la cancha
 

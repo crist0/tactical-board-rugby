@@ -84,6 +84,8 @@ The `20`-unit offset accounts for the run-off boundary before the playable/in-go
 - `x: number`
 - `y: number`
 
+A "Logical Guard" in the `playStore` ensures that no two players with the same `team` and `number` can be on the `'field'` at the same time.
+
 `Ball` model:
 - `id: 'ball'`
 - `location: string` (initialized as `'center'`)
@@ -99,6 +101,7 @@ The board uses a hybrid approach for drag interactions:
 - **In-Field Movement:** Custom mouse-event dragging is used for smooth frame-by-frame repositioning (`mousedown` on element, global `mousemove`/`mouseup`) with all pointer coordinates converted through SVG matrices (`getScreenCTM().inverse()`). To prevent elements from being dragged outside the visible field boundaries, their coordinates are clamped within the valid SVG coordinate space (`0` to `1240` for `x`, `0` to `740` for `y`).
 - **Return to Bench:** Double-clicking a player or the ball on the field instantly returns it to the bench via the `playStore.returnToBench` action.
 - **Ghost System:** The bench displays all players and the ball, even those on the field. Fielded items appear as "ghosts" (semi-transparent, grayscale) and are not draggable. Double-clicking a ghost element returns it to the bench, making it draggable again.
+- **Reset Board:** A "Reset Board" button in the RightSidebar allows the user to return all players and the ball to the bench, after a confirmation.
 
 
 

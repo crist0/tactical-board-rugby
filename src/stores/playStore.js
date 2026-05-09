@@ -39,6 +39,8 @@ export const usePlayStore = defineStore('play', {
   actions: {
     /**
      * Moves an item (player or ball) to a specific position on the field.
+     * If the item is a player, it first checks if another player with the same
+     * team and number is already on the field to prevent duplicates.
      * @param {string} itemType - The type of item to move ('player' or 'ball').
      * @param {string} id - The ID of the item to move.
      * @param {number} x - The new x-coordinate on the field.
@@ -46,13 +48,26 @@ export const usePlayStore = defineStore('play', {
      */
     moveItemToField(itemType, id, x, y) {
       if (itemType === 'player') {
-        const player = this.players.find((entry) => entry.id === id);
-        if (!player) {
+        const playerToMove = this.players.find((p) => p.id === id);
+        if (!playerToMove) {
           return;
         }
-        player.location = 'field';
-        player.x = x;
-        player.y = y;
+
+        // Logical Guard: Check for duplicates before moving
+        const isDuplicate = this.players.some(
+          (p) =>
+            p.team === playerToMove.team &&
+            p.number === playerToMove.number &&
+            p.location === 'field',
+        );
+
+        if (isDuplicate) {
+          return; // Abort if a duplicate is already on the field
+        }
+
+        playerToMove.location = 'field';
+        playerToMove.x = x;
+        playerToMove.y = y;
         return;
       }
 
@@ -63,7 +78,7 @@ export const usePlayStore = defineStore('play', {
       }
     },
     /**
-     * Updates the position of an item on the field.
+     * Updates the position of an item that is already on the field.
      * @param {string} itemType - The type of item to update ('player' or 'ball').
      * @param {string} id - The ID of the item to update.
      * @param {number} x - The new x-coordinate.
@@ -86,7 +101,7 @@ export const usePlayStore = defineStore('play', {
       }
     },
     /**
-     * Returns an item (player or ball) to the bench.
+     * Returns an item (player or ball) from the field to the bench.
      * @param {string} itemType - The type of item to return ('player' or 'ball').
      * @param {string} id - The ID of the item to return.
      */
@@ -107,6 +122,21 @@ export const usePlayStore = defineStore('play', {
         this.ball.x = 0;
         this.ball.y = 0;
       }
+    },
+
+    /**
+     * Resets the entire board by returning all players and the ball to the bench.
+     */
+    resetBoard() {
+      this.players.forEach((player) => {
+        player.location = 'bench';
+        player.x = 0;
+        player.y = 0;
+      });
+
+      this.ball.location = 'bench';
+      this.ball.x = 0;
+      this.ball.y = 0;
     },
   },
 });
