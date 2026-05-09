@@ -54,6 +54,13 @@ npm run format
 - Import global variables when needed
 - Follow BEM naming convention for classes
 
+## Drag and Drop
+- The bench drop zone is implemented in `RightSidebar.vue`.
+- Visual feedback is provided by the `drag-over` class.
+- The `isDraggingOver` reactive state tracks the drag-over state.
+- Event handlers `@dragenter`, `@dragleave`, and `@drop` manage the drag-and-drop flow.
+- The `handleDragEnter` function checks for valid data types to prevent conflicts with file drags.
+
 ## Git Workflow
 - Commit at the end of each completed TASK.
 - Use conventional commit messages: `feat/chore/fix: [Phase X - Task X.Y] - description` (e.g., `chore: [Phase 1 - Task 1.4] - Optimize gitignore and update commit strategy`).

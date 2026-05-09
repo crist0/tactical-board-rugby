@@ -33,6 +33,10 @@ import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-vue-next';
 import { useUiStore } from '@/stores/uiStore';
 
 const uiStore = useUiStore();
+/**
+ * Calculates the zoom level as a percentage.
+ * @returns {number} The zoom level percentage.
+ */
 const zoomPercentage = computed(() => Math.round(uiStore.zoomLevel * 100));
 </script>
 

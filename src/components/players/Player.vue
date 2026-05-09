@@ -1,16 +1,32 @@
 <template>
-  <div class="player-chip" :style="{ backgroundColor: player.color }" :aria-label="`Player ${player.team}${player.number}`">
+  <div
+    class="player-chip"
+    :style="{ backgroundColor: player.color }"
+    :aria-label="`Player ${player.team}${player.number}`"
+    @dblclick="returnToBench"
+  >
     <span class="player-number">{{ player.number }}</span>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { usePlayStore } from "@/stores/playStore";
+
+const props = defineProps({
   player: {
     type: Object,
     required: true,
   },
 });
+
+const playStore = usePlayStore();
+
+/**
+ * Returns the player to the bench.
+ */
+const returnToBench = () => {
+  playStore.returnToBench("player", props.player.id);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -26,6 +42,7 @@ defineProps({
   cursor: grab;
   user-select: none;
   flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .player-number {

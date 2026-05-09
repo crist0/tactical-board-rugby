@@ -40,6 +40,9 @@ import { useUiStore } from '@/stores/uiStore';
 
 const uiStore = useUiStore();
 
+/**
+ * @returns {object} The styles for the app shell.
+ */
 const appShellStyles = computed(() => ({
   gridTemplateColumns: `var(--sidebar-left-width) 1fr ${
     uiStore.isRightSidebarOpen ? 'var(--sidebar-right-width)' : '0px'

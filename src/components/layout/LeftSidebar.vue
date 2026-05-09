@@ -35,6 +35,10 @@ import { useUiStore } from '@/stores/uiStore';
 
 const uiStore = useUiStore();
 
+/**
+ * Handles the input event for the size slider.
+ * @param {Event} event The input event.
+ */
 const handleSizeInput = (event) => {
   const nextSize = Number.parseFloat(event.target.value);
   if (!Number.isNaN(nextSize)) {

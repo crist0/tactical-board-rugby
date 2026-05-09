@@ -96,7 +96,11 @@ The `20`-unit offset accounts for the run-off boundary before the playable/in-go
 ### Drag & Drop Strategy
 The board uses a hybrid approach for drag interactions:
 - **Bench -> Field:** Native HTML5 drag and drop (`dragstart`, `dataTransfer`, `drop`) is used to move a player or the ball from bench components into field coordinates. To ensure a clean, circular drag preview without the browser's default square background, a custom drag image is generated on `dragstart`. A clone of the dragged element is created, styled with a transparent background, appended to the body, and then set as the drag image using `event.dataTransfer.setDragImage()`. The cloned element is removed from the body immediately after.
-- **In-Field Movement:** Custom mouse-event dragging is used for smooth frame-by-frame repositioning (`mousedown` on element, global `mousemove`/`mouseup`) with all pointer coordinates converted through SVG matrices (`getScreenCTM().inverse()`).
+- **In-Field Movement:** Custom mouse-event dragging is used for smooth frame-by-frame repositioning (`mousedown` on element, global `mousemove`/`mouseup`) with all pointer coordinates converted through SVG matrices (`getScreenCTM().inverse()`). To prevent elements from being dragged outside the visible field boundaries, their coordinates are clamped within the valid SVG coordinate space (`0` to `1240` for `x`, `0` to `740` for `y`).
+- **Return to Bench:** Double-clicking a player or the ball on the field instantly returns it to the bench via the `playStore.returnToBench` action.
+- **Ghost System:** The bench displays all players and the ball, even those on the field. Fielded items appear as "ghosts" (semi-transparent, grayscale) and are not draggable. Double-clicking a ghost element returns it to the bench, making it draggable again.
+
+
 
 Field tactical elements are rendered inside the field SVG through `<foreignObject>` nodes under `#field-elements`, allowing Vue component visuals (`Player.vue`, `Ball.vue`) to stay consistent while their positions remain in SVG coordinate space.
 

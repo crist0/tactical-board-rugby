@@ -77,6 +77,9 @@ const cursorY = ref(null);
 const draggedElement = ref(null);
 const dragOffset = ref({ x: 0, y: 0 });
 
+/**
+ * @returns {{width: number, height: number}} The player size in SVG units.
+ */
 const playerSizeInUnits = computed(() => {
   const size = uiStore.playerSize * 10;
   return {
@@ -85,6 +88,9 @@ const playerSizeInUnits = computed(() => {
   };
 });
 
+/**
+ * @returns {{width: number, height: number}} The ball size in SVG units.
+ */
 const ballSizeInUnits = computed(() => {
   const height = uiStore.playerSize * 10;
   return {
@@ -93,9 +99,21 @@ const ballSizeInUnits = computed(() => {
   };
 });
 
+/**
+ * @returns {Array} The players on the field.
+ */
 const fieldPlayers = computed(() => playStore.players.filter((player) => player.location === 'field'));
+
+/**
+ * @returns {object|null} The ball if it is on the field, otherwise null.
+ */
 const fieldBall = computed(() => (playStore.ball.location === 'field' ? playStore.ball : null));
 
+/**
+ * Converts mouse event coordinates to SVG coordinates.
+ * @param {MouseEvent} event The mouse event.
+ * @returns {DOMPoint|null} The SVG point or null if it cannot be calculated.
+ */
 const getSvgPointFromEvent = (event) => {
   const svg = svgRef.value;
   const ctm = svg?.getScreenCTM?.();
@@ -109,6 +127,10 @@ const getSvgPointFromEvent = (event) => {
   return point.matrixTransform(ctm.inverse());
 };
 
+/**
+ * Calculates the maximum pan bounds based on the zoom level.
+ * @returns {{maxPanX: number, maxPanY: number}} The maximum pan bounds.
+ */
 const getMaxPanBounds = () => {
   const el = fieldRef.value;
   if (!el) {
@@ -121,6 +143,12 @@ const getMaxPanBounds = () => {
   return { maxPanX, maxPanY };
 };
 
+/**
+ * Clamps the pan values within the allowed bounds.
+ * @param {number} x The x-coordinate of the pan.
+ * @param {number} y The y-coordinate of the pan.
+ * @returns {{x: number, y: number}} The clamped pan coordinates.
+ */
 const clampPan = (x, y) => {
   if (uiStore.zoomLevel <= 1) {
     return { x: 0, y: 0 };
@@ -133,6 +161,34 @@ const clampPan = (x, y) => {
   };
 };
 
+/**
+ * Clamps the element position within the SVG viewbox.
+ * @param {number} x The x-coordinate of the element.
+ * @param {number} y The y-coordinate of the element.
+ * @param {string} itemType The type of the item ('player' or 'ball').
+ * @returns {{x: number, y: number}} The clamped element position.
+ */
+const clampElementPosition = (x, y, itemType) => {
+  const svg = svgRef.value;
+  if (!svg) {
+    return { x, y };
+  }
+  const viewBox = svg.viewBox.baseVal;
+
+  const itemSize = itemType === 'player' ? playerSizeInUnits.value : ballSizeInUnits.value;
+  const halfWidth = itemSize.width / 2;
+  const halfHeight = itemSize.height / 2;
+
+  const clampedX = Math.max(viewBox.x + halfWidth, Math.min(x, viewBox.x + viewBox.width - halfWidth));
+  const clampedY = Math.max(viewBox.y + halfHeight, Math.min(y, viewBox.y + viewBox.height - halfHeight));
+
+  return { x: clampedX, y: clampedY };
+};
+
+/**
+ * Handles the mouse down event on the SVG.
+ * @param {MouseEvent} event The mouse down event.
+ */
 const handleMouseDown = (event) => {
   if (uiStore.zoomLevel <= 1) {
     uiStore.isDragging = false;
@@ -143,6 +199,10 @@ const handleMouseDown = (event) => {
   uiStore.isDragging = true;
 };
 
+/**
+ * Handles the mouse move event on the field wrapper.
+ * @param {MouseEvent} event The mouse move event.
+ */
 const handleMouseMove = (event) => {
   const svgP = getSvgPointFromEvent(event);
   if (svgP) {
@@ -172,17 +232,27 @@ const handleMouseMove = (event) => {
   uiStore.setPan(clamped.x, clamped.y);
 };
 
+/**
+ * Handles the mouse up event.
+ */
 const handleMouseUp = () => {
   uiStore.isDragging = false;
   draggedElement.value = null;
 };
 
+/**
+ * Handles the mouse leave event.
+ */
 const handleMouseLeave = () => {
   uiStore.isDragging = false;
   cursorX.value = null;
   cursorY.value = null;
 };
 
+/**
+ * Handles the wheel event for zooming.
+ * @param {WheelEvent} event The wheel event.
+ */
 const handleWheel = (event) => {
   if (event.deltaY === 0) {
     return;
@@ -219,6 +289,10 @@ const handleWheel = (event) => {
   uiStore.setPan(clamped.x, clamped.y);
 };
 
+/**
+ * Handles the drop event for moving items.
+ * @param {DragEvent} event The drop event.
+ */
 const handleDrop = (event) => {
   const payload = event.dataTransfer?.getData('text/plain');
   if (!payload) {
@@ -237,9 +311,16 @@ const handleDrop = (event) => {
     return;
   }
 
-  playStore.moveItemToField(parsed.type, parsed.id, svgP.x, svgP.y);
+  const clamped = clampElementPosition(svgP.x, svgP.y, parsed.type);
+  playStore.moveItemToField(parsed.type, parsed.id, clamped.x, clamped.y);
 };
 
+/**
+ * Starts dragging an element.
+ * @param {MouseEvent} event The mouse down event.
+ * @param {object} item The item being dragged.
+ * @param {string} type The type of the item ('player' or 'ball').
+ */
 const startElementDrag = (event, item, type) => {
   const svgP = getSvgPointFromEvent(event);
   if (!svgP) {
@@ -256,6 +337,10 @@ const startElementDrag = (event, item, type) => {
   };
 };
 
+/**
+ * Handles the global mouse move event for dragging elements.
+ * @param {MouseEvent} event The mouse move event.
+ */
 const handleGlobalMouseMove = (event) => {
   if (!draggedElement.value) {
     return;
@@ -266,18 +351,29 @@ const handleGlobalMouseMove = (event) => {
     return;
   }
 
+  const newX = svgP.x - dragOffset.value.x;
+  const newY = svgP.y - dragOffset.value.y;
+
+  const clamped = clampElementPosition(newX, newY, draggedElement.value.type);
+
   playStore.updateItemPosition(
     draggedElement.value.type,
     draggedElement.value.id,
-    svgP.x - dragOffset.value.x,
-    svgP.y - dragOffset.value.y
+    clamped.x,
+    clamped.y
   );
 };
 
+/**
+ * Handles the global mouse up event to stop dragging.
+ */
 const handleGlobalMouseUp = () => {
   draggedElement.value = null;
 };
 
+/**
+ * @returns {string} The cursor style for the field.
+ */
 const fieldCursor = computed(() => {
   if (uiStore.zoomLevel <= 1) {
     return 'default';
@@ -286,6 +382,9 @@ const fieldCursor = computed(() => {
   return uiStore.isDragging ? 'grabbing' : 'grab';
 });
 
+/**
+ * @returns {object} The styles for the field element.
+ */
 const fieldStyles = computed(() => ({
   transform: `translate(${uiStore.panX}px, ${uiStore.panY}px) scale(${uiStore.zoomLevel})`,
   cursor: fieldCursor.value,

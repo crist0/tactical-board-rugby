@@ -4,11 +4,12 @@
       <h3 class="section-title">Team A Bench</h3>
       <div class="bench-grid">
         <div
-          v-for="player in teamABenchPlayers"
+          v-for="player in teamAPlayers"
           :key="player.id"
-          class="bench-item bench-item--player"
-          draggable="true"
+          :class="['bench-item', 'bench-item--player', { 'is-ghost': player.location === 'field' }]"
+          :draggable="player.location !== 'field'"
           @dragstart="handleDragStart($event, player, 'player')"
+          @dblclick="handleDoubleClick(player, 'player')"
         >
           <Player :player="player" />
         </div>
@@ -19,21 +20,27 @@
       <h3 class="section-title">Team B Bench</h3>
       <div class="bench-grid">
         <div
-          v-for="player in teamBBenchPlayers"
+          v-for="player in teamBPlayers"
           :key="player.id"
-          class="bench-item bench-item--player"
-          draggable="true"
+          :class="['bench-item', 'bench-item--player', { 'is-ghost': player.location === 'field' }]"
+          :draggable="player.location !== 'field'"
           @dragstart="handleDragStart($event, player, 'player')"
+          @dblclick="handleDoubleClick(player, 'player')"
         >
           <Player :player="player" />
         </div>
       </div>
     </section>
 
-    <section v-if="showBenchBall" class="bench-section">
+    <section class="bench-section">
       <h3 class="section-title">Ball</h3>
       <div class="ball-slot">
-        <div class="bench-item bench-item--ball" draggable="true" @dragstart="handleDragStart($event, playStore.ball, 'ball')">
+        <div 
+          :class="['bench-item', 'bench-item--ball', { 'is-ghost': playStore.ball.location === 'field' }]"
+          :draggable="playStore.ball.location !== 'field'"
+          @dragstart="handleDragStart($event, playStore.ball, 'ball')"
+          @dblclick="handleDoubleClick(playStore.ball, 'ball')"
+        >
           <Ball :ball="playStore.ball" />
         </div>
       </div>
@@ -42,24 +49,38 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import Player from '@/components/players/Player.vue';
-import Ball from '@/components/ball/Ball.vue';
-import { usePlayStore } from '@/stores/playStore';
+import { computed, ref } from "vue";
+import Player from "@/components/players/Player.vue";
+import Ball from "@/components/ball/Ball.vue";
+import { usePlayStore } from "@/stores/playStore";
 
 const playStore = usePlayStore();
 
-const teamABenchPlayers = computed(() =>
-  playStore.players.filter((player) => player.team === 'A' && player.location === 'bench')
+/**
+ * @returns {Array} The players of team A.
+ */
+const teamAPlayers = computed(() =>
+  playStore.players.filter((player) => player.team === "A")
 );
 
-const teamBBenchPlayers = computed(() =>
-  playStore.players.filter((player) => player.team === 'B' && player.location === 'bench')
+/**
+ * @returns {Array} The players of team B.
+ */
+const teamBPlayers = computed(() =>
+  playStore.players.filter((player) => player.team === 'B')
 );
 
-const showBenchBall = computed(() => playStore.ball.location !== 'field');
-
+/**
+ * Handles the drag start event for an item.
+ * @param {DragEvent} event The drag start event.
+ * @param {object} item The item being dragged.
+ * @param {string} type The type of the item ('player' or 'ball').
+ */
 const handleDragStart = (event, item, type) => {
+  if (item.location === 'field') {
+    event.preventDefault();
+    return;
+  }
   event.dataTransfer.setData(
     'text/plain',
     JSON.stringify({
@@ -83,6 +104,17 @@ const handleDragStart = (event, item, type) => {
     document.body.removeChild(dragImage);
   }, 0);
 };
+
+/**
+ * Handles the double click event for an item.
+ * @param {object} item The item that was double clicked.
+ * @param {string} type The type of the item ('player' or 'ball').
+ */
+const handleDoubleClick = (item, type) => {
+  if (item.location === 'field') {
+    playStore.returnToBench(type, item.id);
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -94,6 +126,8 @@ const handleDragStart = (event, item, type) => {
   color: #7a4b00;
   padding: 14px 12px;
   overflow-y: auto;
+  transition: all 0.3s ease-in-out;
+  border: 2px dashed transparent;
 }
 
 .bench-section {
@@ -129,7 +163,15 @@ const handleDragStart = (event, item, type) => {
   border: none;
   padding: 0;
   border-radius: 50%;
+  transition: all 0.2s ease-in-out;
 }
+
+.bench-item.is-ghost {
+  opacity: 0.3;
+  cursor: not-allowed;
+  filter: grayscale(80%);
+}
+
 
 .bench-item--player {
   width: 28px;
