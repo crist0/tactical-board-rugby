@@ -39,7 +39,7 @@ El proyecto se dividirá en **8 FASES principales**, cada una con tareas especí
 
 ---
 
-## FASE 3: Sistema de Jugadores y Balón
+## FASE 3: Sistema de Jugadores y Balón #COMPLETE
 **Objetivo:** Crear los elementos interactivos (jugadores y balón) con drag & drop
 
 ### Tareas:
@@ -48,11 +48,11 @@ El proyecto se dividirá en **8 FASES principales**, cada una con tareas especí
 5. **3.3** - Implementar banquillo con 30 jugadores (15 por equipo) + balón #COMPLETE
 6. **3.4** - Implementar drag & drop desde banquillo a cancha #COMPLETE
 7. **3.5** - Implementar drag & drop dentro de la cancha #COMPLETE
-8. **3.6** - Implementar devolución al banquillo (doble click y arrastrar) #IN-PROGRESS (Note: Partially implemented, needs corrections based on SVG coordinate system)
-9. **3.7** - Implementar restricción: un jugador por número en cancha
-10. **3.8** - Implementar botón Reset (devolver todos al banquillo)
-11. **3.9** - Crear selectores de color para equipos A y B
-12. **3.10** - Balón siempre inicia en el centro de la cancha
+8. **3.6** - Implementar devolución al banquillo (doble click y arrastrar) #COMPLETE
+9. **3.7** - Implementar restricción: un jugador por número en cancha #COMPLETE
+10. **3.8** - Implementar botón Reset (devolver todos al banquillo) #COMPLETE
+11. **3.9** - Crear selectores de color para equipos A y B #COMPLETE
+12. **3.10** - Balón siempre inicia en el centro de la cancha #COMPLETE
 
 **Entregable:** Sistema completo de jugadores y balón interactivo con drag & drop
 

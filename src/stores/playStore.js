@@ -20,14 +20,18 @@ const createTeamPlayers = (team, color) =>
     };
   });
 
-const initialPlayers = [
-  ...createTeamPlayers('A', '#0055ff'),
-  ...createTeamPlayers('B', '#ff2222'),
+const initialPlayers = (teamAColor, teamBColor) => [
+  ...createTeamPlayers('A', teamAColor),
+  ...createTeamPlayers('B', teamBColor),
 ];
 
 export const usePlayStore = defineStore('play', {
   state: () => ({
-    players: initialPlayers,
+    /** @type {Array<import('@/types').Player>} */
+    players: initialPlayers(
+      localStorage.getItem('teamAColor') || '#0055ff',
+      localStorage.getItem('teamBColor') || '#ff2222',
+    ),
     ball: {
       id: 'ball',
       location: 'center',
@@ -35,8 +39,36 @@ export const usePlayStore = defineStore('play', {
       y: 35,
       color: '#ffffff',
     },
+    /** @type {string} */
+    teamAColor: localStorage.getItem('teamAColor') || '#0055ff',
+    /** @type {string} */
+    teamBColor: localStorage.getItem('teamBColor') || '#ff2222',
   }),
   actions: {
+    /**
+     * Updates the color for a specified team and saves it to local storage.
+     * @param {'A' | 'B'} team - The team to update ('A' or 'B').
+     * @param {string} color - The new hex color code.
+     */
+    updateTeamColor(team, color) {
+      if (team === 'A') {
+        this.teamAColor = color;
+        localStorage.setItem('teamAColor', color);
+        this.players
+          .filter((p) => p.team === 'A')
+          .forEach((p) => {
+            p.color = color;
+          });
+      } else if (team === 'B') {
+        this.teamBColor = color;
+        localStorage.setItem('teamBColor', color);
+        this.players
+          .filter((p) => p.team === 'B')
+          .forEach((p) => {
+            p.color = color;
+          });
+      }
+    },
     /**
      * Moves an item (player or ball) to a specific position on the field.
      * If the item is a player, it first checks if another player with the same

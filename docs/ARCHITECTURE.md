@@ -79,10 +79,12 @@ The `20`-unit offset accounts for the run-off boundary before the playable/in-go
 - `id: string` (`A1` -> `A15`, `B1` -> `B15`)
 - `number: number` (`1` -> `15`)
 - `team: 'A' | 'B'`
-- `color: string` (Team A `#0055ff`, Team B `#ff2222`)
+- `color: string` (Team A `#0055ff`, Team B `#ff2222`) - DEPRECATED: See `teamAColor` and `teamBColor`.
 - `location: 'bench' | 'field'`
 - `x: number`
 - `y: number`
+
+The store also holds `teamAColor` and `teamBColor` as state properties, which are persisted to LocalStorage to maintain color selections across sessions.
 
 A "Logical Guard" in the `playStore` ensures that no two players with the same `team` and `number` can be on the `'field'` at the same time.
 

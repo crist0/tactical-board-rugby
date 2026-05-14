@@ -54,6 +54,11 @@ npm run format
 - Import global variables when needed
 - Follow BEM naming convention for classes
 
+## UI Components
+
+### Color Pickers
+Standard HTML5 `<input type="color">` elements are used for team color customization in the right sidebar. This provides a native and consistent user experience for color selection without introducing new dependencies.
+
 ## Drag and Drop
 - The bench drop zone is implemented in `RightSidebar.vue`.
 - Visual feedback is provided by the `drag-over` class.
