@@ -58,14 +58,14 @@ El proyecto se dividirá en **8 FASES principales**, cada una con tareas especí
 
 ---
 
-## FASE 4: Sistema de Vinculación Balón-Jugador
+## FASE 4: Sistema de Vinculación Balón-Jugador #COMPLETE
 **Objetivo:** Implementar la funcionalidad de "pegar" el balón a un jugador
 
 ### Tareas:
-4. **4.1** - Implementar detección de proximidad balón-jugador
-5. **4.2** - Implementar resaltado visual cuando balón está cerca de jugador
-6. **4.3** - Implementar vinculación automática al soltar balón cerca
-7. **4.4** - Implementar indicador visual de balón vinculado (línea punteada/ícono)
+4. **4.1** - Implementar detección de proximidad balón-jugador #COMPLETE
+5. **4.2** - Implementar resaltado visual cuando balón está cerca de jugador #COMPLETE
+6. **4.3** - Implementar vinculación automática al soltar balón cerca #COMPLETE
+7. **4.4** - Implementar indicador visual de balón vinculado (línea punteada/ícono) #COMPLETE
 8. **4.5** - Implementar movimiento conjunto balón-jugador cuando están vinculados
 9. **4.6** - Implementar desvinculación al arrastrar balón lejos del jugador
 

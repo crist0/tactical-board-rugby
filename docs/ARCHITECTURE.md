@@ -109,5 +109,50 @@ The board uses a hybrid approach for drag interactions:
 
 Field tactical elements are rendered inside the field SVG through `<foreignObject>` nodes under `#field-elements`, allowing Vue component visuals (`Player.vue`, `Ball.vue`) to stay consistent while their positions remain in SVG coordinate space.
 
+## Linked State
+
+The ball can be "linked" to a player so that it automatically follows its carrier during drag operations. This is managed through the `linkedTo` property on the ball object.
+
+- **`ball.linkedTo: string | null`** — Stores the player ID (e.g. `A5`) of the player currently carrying the ball, or `null` if the ball is independent.
+- **`playStore.linkBallToPlayer(playerId)`** — Links the ball to a specific player. Passing `null` unlinks the ball.
+- **Position Synchronization:** When `updateItemPosition` is called on a player, the store checks `ball.linkedTo`. If the ball is linked to that player and the ball is on the field, the ball's position is automatically set relative to the player (offset to the right by 15 SVG units). This ensures the ball visually follows its carrier without requiring a separate `updateItemPosition` call for the ball.
+- **Defensive Override:** If the ball itself is dragged while linked, its position is recalculated from the linked player's position rather than using the raw mouse coordinates. This prevents the ball from detaching during manual movement.
+- **Cleanup:** When a linked player is returned to the bench, the ball's `linkedTo` is automatically cleared. Similarly, returning the ball to the bench clears its `linkedTo`.
+- **Reset Behaviour:** `resetBoard()` clears all links by setting `ball.linkedTo = null`.
+
+## Rendering Order (Z-Index)
+
+SVG renders child elements in document order — elements declared later in the DOM appear visually on top of earlier ones. The field's `#field-elements` `<g>` group uses a single `v-for` over a `sortedElements` computed property to establish a predictable 4-tier stacking hierarchy:
+
+| Priority | Layer | Condition | Example |
+|---|---|---|---|
+| 0 (bottom) | Default | No special state | Stationary players without the ball |
+| 1 | Highlighted | `item.id === highlightedPlayerId` | Player glowing during ball proximity detection |
+| 2 | Active Drag | `item.isDragging` | Player or ball being moved by the user |
+| 3 (top) | Ball Carrier | `playStore.ball.linkedTo === item.id` | Player currently holding the ball |
+
+The sort is ascending: priority-0 elements are rendered first (backmost), priority-3 elements are rendered last (topmost). This ensures:
+- The ball carrier is always visible above other players.
+- The element being dragged stays on top of everything else for a smooth visual experience.
+- The highlighted target player is visible above static elements but below the dragged item.
+- The priority calculation is reactive via Vue's computed dependency tracking — any change to `isDragging`, `highlightedPlayerId`, or `ball.linkedTo` triggers a re-sort.
+
+#### Chronological Stack (Phase 4)
+Within each priority tier, elements are further ordered by a `lastMovedTimestamp` (a numeric timestamp updated on every drag end). This chronological refinement ensures:
+
+- **The Ball is always on top** — it occupies its own priority tier (tier 3) alongside the ball carrier, but within that tier the ball element sorts last.
+- **The Linked Player** sits directly beneath the ball within tier 3.
+- **Most Recently Dragged items** float above less recently interacted elements within the same tier. If two players share priority tier 0 (both stationary and unhighlighted), the one dragged most recently renders on top.
+
+This chronological stack prevents stale elements from obscuring active ones and keeps the visual hierarchy predictable during rapid drag interactions.
+
+### Hitbox Management
+`<foreignObject>` nodes used to render Vue components inside the field SVG have their `width` and `height` kept strictly proportional to the rendered player/ball visual size. This minimal hitbox prevents elements from intercepting pointer events on elements positioned beneath them. The CSS property `overflow: visible` is applied to the `foreignObject` so that visual effects (e.g., the glow aura from Proximity Detection) can extend beyond the hitbox bounds without expanding the clickable area:
+
+| Property | Purpose |
+|---|---|
+| Minimal `foreignObject` size | Reduces selection obstruction by limiting the pointer-event surface |
+| `overflow: visible` | Allows glow/aura effects to render outside the hitbox without affecting hit detection |
+
 ## Development Phases
 See ROADMAP.txt for detailed phase breakdown.

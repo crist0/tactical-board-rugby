@@ -16,23 +16,23 @@
 - [x] 2.5 - Implementar pan/drag de la cancha cuando hay zoom
 - [x] 2.6 - Agregar indicadores visuales (coordenadas, grid opcional)
 
-## FASE 3: Sistema de Jugadores y Balón - IN PROGRESS
+## FASE 3: Sistema de Jugadores y Balón - COMPLETED
 - [x] 3.1 - Crear componente Jugador (círculo con número)
 - [x] 3.2 - Crear componente Balón (óvalo)
 - [x] 3.3 - Implementar banquillo con 30 jugadores (15 por equipo) + balón
 - [x] 3.4 - Implementar drag & drop desde banquillo a cancha
 - [x] 3.5 - Implementar drag & drop dentro de la cancha - COMPLETED
-- [/] 3.6 - Implementar devolución al banquillo (doble click y arrastrar) - IN PROGRESS (Note: Partially implemented, needs corrections based on SVG coordinate system)
+- [x] 3.6 - Implementar devolución al banquillo (doble click y arrastrar)
 - [x] 3.7 - Implementar restricción: un jugador por número en cancha
 - [x] 3.8 - Implementar botón Reset (devolver todos al banquillo)
 - [ ] 3.9 - Crear selectores de color para equipos A y B
 - [ ] 3.10 - Balón siempre inicia en el centro de la cancha
 
-## FASE 4: Sistema de Vinculación Balón-Jugador
-- [ ] 4.1 - Implementar detección de proximidad balón-jugador
-- [ ] 4.2 - Implementar resaltado visual cuando balón está cerca de jugador
-- [ ] 4.3 - Implementar vinculación automática al soltar balón cerca
-- [ ] 4.4 - Implementar indicador visual de balón vinculado (línea punteada/ícono)
+## FASE 4: Sistema de Vinculación Balón-Jugador - COMPLETED
+- [x] 4.1 - Implementar detección de proximidad balón-jugador
+- [x] 4.2 - Implementar resaltado visual cuando balón está cerca de jugador
+- [x] 4.3 - Implementar vinculación automática al soltar balón cerca
+- [x] 4.4 - Implementar indicador visual de balón vinculado (línea punteada/ícono)
 - [ ] 4.5 - Implementar movimiento conjunto balón-jugador cuando están vinculados
 - [ ] 4.6 - Implementar desvinculación al arrastrar balón lejos del jugador
 

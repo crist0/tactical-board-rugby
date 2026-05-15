@@ -23,33 +23,19 @@
         <FieldLines />
         <FieldGrid />
         <g id="field-elements">
-          <foreignObject
-            v-for="item in fieldPlayers"
-            :key="item.id"
-            :x="item.x - playerSizeInUnits.width / 2"
-            :y="item.y - playerSizeInUnits.height / 2"
-            :width="playerSizeInUnits.width"
-            :height="playerSizeInUnits.height"
-            @mousedown.stop.prevent="startElementDrag($event, item, 'player')"
-          >
-            <div class="field-element-wrapper">
-              <Player :player="item" />
-            </div>
-          </foreignObject>
-
-          <foreignObject
-            v-if="fieldBall"
-            :key="fieldBall.id"
-            :x="fieldBall.x - ballSizeInUnits.width / 2"
-            :y="fieldBall.y - ballSizeInUnits.height / 2"
-            :width="ballSizeInUnits.width"
-            :height="ballSizeInUnits.height"
-            @mousedown.stop.prevent="startElementDrag($event, fieldBall, 'ball')"
-          >
-            <div class="field-element-wrapper field-element-wrapper--ball">
-              <Ball :ball="fieldBall" />
-            </div>
-          </foreignObject>
+            <foreignObject
+              v-for="item in sortedElements"
+              :key="item.id"
+              :width="item.type === 'ball' ? ballWidth * uiStore.playerSize : elementSizeUnits"
+              :height="item.type === 'ball' ? ballHeight * uiStore.playerSize : elementSizeUnits"
+              :x="item.x - (item.type === 'ball' ? ballWidth * uiStore.playerSize : elementSizeUnits) / 2"
+              :y="item.y - (item.type === 'ball' ? ballHeight * uiStore.playerSize : elementSizeUnits) / 2"
+            >
+              <div class="field-element-wrapper" @mousedown.stop.prevent="startElementDrag($event, item, item.type)">
+                <Player v-if="item.type === 'player'" :player="item" :is-highlighted="item.id === highlightedPlayerId" :size="playerSizeInUnits.width" />
+                <Ball v-else :ball="item" :width="ballSizeInUnits.width" :height="ballSizeInUnits.height" />
+              </div>
+            </foreignObject>
         </g>
       </svg>
     </div>
@@ -76,12 +62,30 @@ const cursorX = ref(null);
 const cursorY = ref(null);
 const draggedElement = ref(null);
 const dragOffset = ref({ x: 0, y: 0 });
+const highlightedPlayerId = ref(null);
+
+/**
+ * @returns {number} The base element size in SVG units (applies to players).
+ */
+const elementSizeUnits = computed(() => uiStore.playerSize * 10);
+
+/**
+ * Base ball width (before playerSize scaling) in SVG units.
+ * @type {number}
+ */
+const ballWidth = 10 / 1.5;
+
+/**
+ * Base ball height (before playerSize scaling) in SVG units.
+ * @type {number}
+ */
+const ballHeight = 10;
 
 /**
  * @returns {{width: number, height: number}} The player size in SVG units.
  */
 const playerSizeInUnits = computed(() => {
-  const size = uiStore.playerSize * 10;
+  const size = elementSizeUnits.value;
   return {
     width: size,
     height: size,
@@ -92,9 +96,9 @@ const playerSizeInUnits = computed(() => {
  * @returns {{width: number, height: number}} The ball size in SVG units.
  */
 const ballSizeInUnits = computed(() => {
-  const height = uiStore.playerSize * 10;
+  const height = elementSizeUnits.value;
   return {
-    width: height / 1.5,
+    width: ballWidth * uiStore.playerSize,
     height,
   };
 });
@@ -108,6 +112,41 @@ const fieldPlayers = computed(() => playStore.players.filter((player) => player.
  * @returns {object|null} The ball if it is on the field, otherwise null.
  */
 const fieldBall = computed(() => (playStore.ball.location === 'field' ? playStore.ball : null));
+
+/**
+ * Returns an array of all field elements (players + ball) sorted by rendering order.
+ * SVG renders elements in document order (later = on top).
+ *
+ * Order (bottom to top):
+ *   1. Players sorted by lastMovedTimestamp ascending (oldest first, newest last)
+ *   2. The carrier player (ball.linkedTo) is bumped to the penultimate position
+ *   3. The Ball is always the absolute last element (top of the Z-axis)
+ *
+ * @returns {Array<{type: 'player' | 'ball'}>}
+ */
+const sortedElements = computed(() => {
+  const players = fieldPlayers.value.map((player) => ({ ...player, type: 'player' }));
+
+  // Sort by lastMovedTimestamp ascending (oldest first → bottom, newest last → top)
+  players.sort((a, b) => (a.lastMovedTimestamp || 0) - (b.lastMovedTimestamp || 0));
+
+  // Move the linked (carrier) player to the penultimate position (right before the ball)
+  const linkedPlayerId = playStore.ball.linkedTo;
+  if (linkedPlayerId) {
+    const linkedIndex = players.findIndex((p) => p.id === linkedPlayerId);
+    if (linkedIndex !== -1) {
+      const [linkedPlayer] = players.splice(linkedIndex, 1);
+      players.push(linkedPlayer);
+    }
+  }
+
+  // Append the ball as the very last element (top of the Z-axis)
+  if (fieldBall.value) {
+    return [...players, { ...fieldBall.value, type: 'ball' }];
+  }
+
+  return players;
+});
 
 /**
  * Converts mouse event coordinates to SVG coordinates.
@@ -237,6 +276,15 @@ const handleMouseMove = (event) => {
  */
 const handleMouseUp = () => {
   uiStore.isDragging = false;
+  if (draggedElement.value) {
+    playStore.setDragging(draggedElement.value.type, draggedElement.value.id, false);
+
+    // If the ball was being dragged and there's a highlighted player, link the ball
+    if (draggedElement.value.type === 'ball' && highlightedPlayerId.value) {
+      playStore.linkBallToPlayer(highlightedPlayerId.value);
+    }
+  }
+  highlightedPlayerId.value = null;
   draggedElement.value = null;
 };
 
@@ -247,6 +295,7 @@ const handleMouseLeave = () => {
   uiStore.isDragging = false;
   cursorX.value = null;
   cursorY.value = null;
+  highlightedPlayerId.value = null;
 };
 
 /**
@@ -316,6 +365,32 @@ const handleDrop = (event) => {
 };
 
 /**
+ * Finds the nearest player to a given position.
+ * Only returns a player if the position is within the player's circular area.
+ * @param {number} x - The x-coordinate to check.
+ * @param {number} y - The y-coordinate to check.
+ * @returns {object|null} The closest player within range, or null.
+ */
+const findNearestPlayer = (x, y) => {
+  const radius = playerSizeInUnits.value.width / 2;
+  let closest = null;
+  let closestDistance = Infinity;
+
+  for (const player of fieldPlayers.value) {
+    const dx = x - player.x;
+    const dy = y - player.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < radius && distance < closestDistance) {
+      closest = player;
+      closestDistance = distance;
+    }
+  }
+
+  return closest;
+};
+
+/**
  * Starts dragging an element.
  * @param {MouseEvent} event The mouse down event.
  * @param {object} item The item being dragged.
@@ -335,6 +410,7 @@ const startElementDrag = (event, item, type) => {
     id: item.id,
     type,
   };
+  playStore.setDragging(type, item.id, true);
 };
 
 /**
@@ -362,12 +438,27 @@ const handleGlobalMouseMove = (event) => {
     clamped.x,
     clamped.y
   );
+
+  // If dragging the ball, run proximity detection
+  if (draggedElement.value.type === 'ball') {
+    const nearest = findNearestPlayer(clamped.x, clamped.y);
+    highlightedPlayerId.value = nearest ? nearest.id : null;
+  }
 };
 
 /**
  * Handles the global mouse up event to stop dragging.
  */
 const handleGlobalMouseUp = () => {
+  if (draggedElement.value) {
+    playStore.setDragging(draggedElement.value.type, draggedElement.value.id, false);
+
+    // If the ball was being dragged and there's a highlighted player, link the ball
+    if (draggedElement.value.type === 'ball' && highlightedPlayerId.value) {
+      playStore.linkBallToPlayer(highlightedPlayerId.value);
+    }
+  }
+  highlightedPlayerId.value = null;
   draggedElement.value = null;
 };
 
@@ -461,10 +552,14 @@ onBeforeUnmount(() => {
 .field-element-wrapper {
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: visible;
 }
 
-.field-element-wrapper--ball {
-  padding: 10%;
-  box-sizing: border-box;
+foreignObject {
+  overflow: visible !important;
 }
 </style>
