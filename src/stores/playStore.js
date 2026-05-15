@@ -78,6 +78,16 @@ export const usePlayStore = defineStore('play', {
       }
     },
     /**
+     * Lazy imports and returns the playbackStore instance.
+     * Avoids circular dependency at module evaluation time.
+     * @returns {Promise<import('pinia').StoreGeneric>}
+     */
+    async _getPlaybackStore() {
+      const { usePlaybackStore } = await import('@/stores/playbackStore');
+      return usePlaybackStore();
+    },
+
+    /**
      * Moves an item (player or ball) to a specific position on the field.
      * If the item is a player, it first checks if another player with the same
      * team and number is already on the field to prevent duplicates.
@@ -86,7 +96,7 @@ export const usePlayStore = defineStore('play', {
      * @param {number} x - The new x-coordinate on the field.
      * @param {number} y - The new y-coordinate on the field.
      */
-    moveItemToField(itemType, id, x, y) {
+    async moveItemToField(itemType, id, x, y) {
       if (itemType === 'player') {
         const playerToMove = this.players.find((p) => p.id === id);
         if (!playerToMove) {
@@ -109,15 +119,16 @@ export const usePlayStore = defineStore('play', {
         playerToMove.x = x;
         playerToMove.y = y;
         playerToMove.lastMovedTimestamp = Date.now();
-        return;
-      }
-
-      if (itemType === 'ball' && this.ball.id === id) {
+      } else if (itemType === 'ball' && this.ball.id === id) {
         this.ball.location = 'field';
         this.ball.x = x;
         this.ball.y = y;
         this.ball.lastMovedTimestamp = Date.now();
       }
+
+      // Auto-save: persist the position change into the active keyframe
+      const playbackStore = await this._getPlaybackStore();
+      await playbackStore.saveSnapshot();
     },
     /**
      * Sets the dragging state for a player or ball.
@@ -165,12 +176,16 @@ export const usePlayStore = defineStore('play', {
      * Updates the position of an item that is already on the field.
      * If the ball is linked to a player and that player is being updated,
      * the ball automatically moves offset to the right of the player.
+     * Every position update is automatically persisted to the active keyframe
+     * via playbackStore.saveSnapshot().
      * @param {string} itemType - The type of item to update ('player' or 'ball').
      * @param {string} id - The ID of the item to update.
      * @param {number} x - The new x-coordinate.
      * @param {number} y - The new y-coordinate.
      */
-    updateItemPosition(itemType, id, x, y) {
+    async updateItemPosition(itemType, id, x, y) {
+      let shouldSave = false;
+
       if (itemType === 'player') {
         const player = this.players.find((entry) => entry.id === id);
         if (!player) {
@@ -179,6 +194,7 @@ export const usePlayStore = defineStore('play', {
         player.x = x;
         player.y = y;
         player.lastMovedTimestamp = Date.now();
+        shouldSave = true;
 
         // If the ball is linked to this player, move it offset to the right
         if (this.ball.linkedTo === player.id && this.ball.location === 'field') {
@@ -186,11 +202,9 @@ export const usePlayStore = defineStore('play', {
           this.ball.y = player.y;
           this.ball.lastMovedTimestamp = Date.now();
         }
-        return;
-      }
-
-      if (itemType === 'ball' && this.ball.id === id) {
+      } else if (itemType === 'ball' && this.ball.id === id) {
         this.ball.lastMovedTimestamp = Date.now();
+        shouldSave = true;
 
         // Find the nearest player on the field excluding the currently linked one
         // and any player that is temporarily excluded (ballUnlinkExclusionId)
@@ -244,13 +258,19 @@ export const usePlayStore = defineStore('play', {
           this.ball.y = y;
         }
       }
+
+      // Auto-save: persist the position change into the active keyframe
+      if (shouldSave) {
+        const playbackStore = await this._getPlaybackStore();
+        await playbackStore.saveSnapshot();
+      }
     },
     /**
      * Returns an item (player or ball) from the field to the bench.
      * @param {string} itemType - The type of item to return ('player' or 'ball').
      * @param {string} id - The ID of the item to return.
      */
-    returnToBench(itemType, id) {
+    async returnToBench(itemType, id) {
       if (itemType === 'player') {
         const player = this.players.find((entry) => entry.id === id);
         if (!player) {
@@ -264,21 +284,22 @@ export const usePlayStore = defineStore('play', {
         if (this.ball.linkedTo === player.id) {
           this.ball.linkedTo = null;
         }
-        return;
-      }
-
-      if (itemType === 'ball' && this.ball.id === id) {
+      } else if (itemType === 'ball' && this.ball.id === id) {
         this.ball.location = 'bench';
         this.ball.x = 0;
         this.ball.y = 0;
         this.ball.linkedTo = null; // Clear link when ball returns to bench
       }
+
+      // Auto-save: persist the position change into the active keyframe
+      const playbackStore = await this._getPlaybackStore();
+      await playbackStore.saveSnapshot();
     },
 
     /**
      * Resets the entire board by returning all players and the ball to the bench.
      */
-    resetBoard() {
+    async resetBoard() {
       this.players.forEach((player) => {
         player.location = 'bench';
         player.x = 0;
@@ -292,6 +313,10 @@ export const usePlayStore = defineStore('play', {
       this.ball.linkedTo = null;
       this.ballUnlinkExclusionId = null;
       this.ball.lastMovedTimestamp = 0;
+
+      // Auto-save: persist the reset state into the active keyframe
+      const playbackStore = await this._getPlaybackStore();
+      await playbackStore.saveSnapshot();
     },
   },
 });

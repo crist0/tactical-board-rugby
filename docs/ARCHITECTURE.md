@@ -31,7 +31,7 @@ Reusable composition functions following Vue 3 best practices.
 Pinia stores for global state management:
 - **playStore** - Manages players and ball state as the canonical tactical element model (bench/field location + coordinates)
 - **uiStore** - UI shell state for panel visibility (`isRightSidebarOpen`, `isTimelineOpen`), zoom (`zoomLevel`, constrained from 1.0x to 3.0x), and pan (`panX`, `panY`) for drag navigation
-- **playbackStore** - Animation playback control
+- **playbackStore** - "Owner of the Match State". Manages an array of keyframes (independent snapshots capturing player positions, ball position, and ball linking). Controls the active keyframe index, and provides actions for keyframe CRUD operations. Integrates with playStore via auto-save on position updates.
 
 ### /src/utils
 Utility functions and constants.
@@ -155,5 +155,128 @@ This chronological stack prevents stale elements from obscuring active ones and 
 | Minimal `foreignObject` size | Reduces selection obstruction by limiting the pointer-event surface |
 | `overflow: visible` | Allows glow/aura effects to render outside the hitbox without affecting hit detection |
 
+### Snapshot / Keyframe Data Flow
+
+The keyframe system follows a store-to-store data flow pattern:
+
+1. **Capture (`playbackStore._captureSnapshot`):** Extracts lightweight snapshot data from `playStore` (player `id`, `x`, `y`, `location`; ball `id`, `x`, `y`, `location`, `linkedTo`). This uses a dedicated `createSnapshot()` helper that maps over the 30 players and the ball, omitting non-essential fields (color, isDragging, lastMovedTimestamp).
+
+2. **Deep Clone (helper `deepClone`):** Snapshots are deep-cloned via `JSON.parse(JSON.stringify())` before being stored in the keyframes array. This guarantees each keyframe is an independent, immutable object graph — not a reactive Vue reference to the current playStore state.
+
+3. **Apply (`playbackStore._applySnapshot`):** When `loadKeyframe(index)` is called, the snapshot's data is written directly into `playStore.players` and `playStore.ball`, overwriting the current field state (Option B strategy). The loop matches snapshot players by `id` to update coordinates and location.
+
+4. **Auto-Save Integration:** Every call to `playStore.updateItemPosition()` triggers `playbackStore.saveSnapshot()` asynchronously at the end of the method, persisting each user drag movement into the active keyframe automatically.
+
+5. **Lazy Import for Circular Dependencies:** Both `playStore` and `playbackStore` import each other using dynamic `import()` at runtime (inside action methods) rather than static `import` at the module top level. This avoids circular dependency errors while allowing bidirectional store communication.
+
+```
+┌─────────────────────────────────────────┐
+│              playStore                   │
+│  players[], ball, linkedTo              │
+│  ┌─────────────────────────────────┐   │
+│  │ updateItemPosition()            │   │
+│  │   → updates x, y, location      │   │
+│  │   → calls playbackStore.save()  │   │
+│  └─────────────────────────────────┘   │
+└──────────────────────┬──────────────────┘
+                       │
+          captureSnapshot() / applySnapshot()
+                       │
+                       ▼
+┌─────────────────────────────────────────┐
+│            playbackStore                │
+│  keyframes[ ][ ], currentKeyframeIndex │
+│  ┌─────────────────────────────────┐   │
+│  │ addKeyframe()                   │   │
+│  │ loadKeyframe(index)             │   │
+│  │ duplicateKeyframeToEnd(index)   │   │
+│  │ insertKeyframeAfter(index)      │   │
+│  │ deleteKeyframe(index)           │   │
+│  │ saveSnapshot()                  │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+## Timeline UI (Visual Keyframe Interface)
+
+The visual timeline is rendered in `AppFooter.vue` and provides a horizontal scrollable interface for managing keyframes.
+
+### Component Architecture
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    AppFooter.vue                       │
+│  ┌────────┬──────────────────────────┬─────────────┐  │
+│  │ Header │ Scrollable Keyframe List │ + Keyframe   │  │
+│  │ (label,│ ┌──┬──┬──┬──┬──┬──┬──┐  │ Button       │  │
+│  │ count) │ │1 ││2 ││3 ││4 ││5 ││6 │  │             │  │
+│  │        │ └──┴──┴──┴──┴──┴──┴──┘  │             │  │
+│  └────────┴──────────────────────────┴─────────────┘  │
+│                                                        │
+│  ┌─────────────────────────────────────────────────┐  │
+│  │         ContextMenu (Teleported to body)         │  │
+│  │  + Add Keyframe                                  │  │
+│  │  ⧉ Duplicate to end                              │  │
+│  │  ↪ Insert next                                   │  │
+│  └─────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────┘
+```
+
+### Components
+
+| Component | File | Purpose |
+|---|---|---|
+| `AppFooter.vue` | `src/components/layout/AppFooter.vue` | Main timeline container, orchestrates keyframe CRUD, drag-and-drop reorder, context menu |
+| `TimelineKeyframe.vue` | `src/components/timeline/TimelineKeyframe.vue` | Individual keyframe box with index number, delete button, context menu trigger, drag source/target |
+| `ContextMenu.vue` | `src/components/timeline/ContextMenu.vue` | Teleported floating menu with "Add Keyframe", "Duplicate to end", "Insert next" actions |
+
+### UI Interaction with `playbackStore`
+
+1. **Keyframe Click (Option B):** Clicking a keyframe box calls `playbackStore.loadKeyframe(index)` which immediately overwrites `playStore` state with the snapshot data. This is the "Option B" philosophy — instant state replacement.
+
+2. **Active Keyframe Highlight:** The active keyframe (where `index === playbackStore.currentKeyframeIndex`) gets a distinct blue highlight (`--active` class) with a stronger border and background color, making the current position visually obvious.
+
+3. **Delete Button:** Each keyframe has a small `×` button (shown on hover). It is hidden when only 1 keyframe exists to prevent deletion of the last keyframe. Before deleting the current keyframe, the component loads an adjacent one to maintain consistent field state.
+
+4. **Add Keyframe:** The persistent `+ Keyframe` button calls `playbackStore.addKeyframe()`, which deep-clones the last keyframe and appends it, then sets `currentKeyframeIndex` to the new index.
+
+5. **Context Menu Actions:**
+   - *Add Keyframe*: Same as the `+ Keyframe` button.
+   - *Duplicate to end*: Calls `playbackStore.duplicateKeyframeToEnd(index)`.
+   - *Insert next*: Calls `playbackStore.insertKeyframeAfter(index)`.
+
+### Drag & Drop Reordering (Task 5.5)
+
+Reordering uses the **HTML5 Drag API** with no external libraries:
+
+1. **Drag Start:** `TimelineKeyframe` sets `dataTransfer` with the source index and applies a visual opacity reduction to indicate the drag source.
+2. **Drag Over/Drop Target:** Each keyframe listens for `dragover.prevent` and `drop.prevent`. On `dragenter`, a visual highlight class is added.
+3. **Drop Handler (`handleDropEvent`):** Reads the source index from `event.dataTransfer.getData('text/plain')`, then performs an in-place splice to reorder the `playbackStore.keyframes` array.
+4. **Index Adjustment:** After reorder, `currentKeyframeIndex` is recalculated to remain pointing at the same keyframe content (not the same index position):
+   - If the dragged keyframe was the active one → move the active index to the drop position.
+   - If elements before the active index shifted → decrement or increment accordingly.
+5. **Auto-scroll:** After any reorder operation, `scrollToActive()` ensures the active keyframe remains visible in the horizontal scroll container.
+
+### Scroll Behavior
+
+- The timeline uses `overflow-x: auto` with a thin custom scrollbar.
+- `scrollToActive()` calls `scrollIntoView({ behavior: 'smooth', inline: 'center' })` on the active keyframe element after any navigation or mutation.
+
+### Context Menu Implementation
+
+- `ContextMenu.vue` uses Vue's `<Teleport to="body">` to render outside any overflow-hidden parent.
+- A transparent backdrop closes the menu on click.
+- The `Escape` key also dismisses the menu via a document-level `keydown` listener.
+- Position is set from `event.clientX`/`event.clientY` at the moment of opening.
+
+### Styling
+
+- All timeline components follow the dark theme (`#1f2937` background, `#f3f4f6` text).
+- Active keyframe: blue accent (`#1e40af` background, `#3b82f6` border).
+- Hover effects: subtle lift (`translateY(-1px)`) and background brightening.
+- Delete button: red circle (`#ef4444`) that fades in on hover.
+- Context menu: dark surface with `box-shadow`, rounded corners, hover highlighting.
+- All transitions are 150ms `ease` for smooth interactions.
+
 ## Development Phases
-See ROADMAP.txt for detailed phase breakdown.
+See ROADMAP.md for detailed phase breakdown.

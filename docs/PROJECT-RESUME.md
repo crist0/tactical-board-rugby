@@ -15,6 +15,11 @@
 - Control de versiones: Git (commit por cada fase completada)
 - Migración futura: IndexedDB (cuando sea necesario por volumen de datos)
 
+**Arquitectura de Stores (Pinia):**
+- **playStore:** Estado maestro de todos los elementos tácticos (30 jugadores + balón). Fuente de verdad para posiciones (`x`, `y`), ubicación (`field`/`bench`) y estado de vinculación (`linkedTo`).
+- **playbackStore:** Dueño del estado de las jugadas. Gestiona un array de `keyframes` (snapshots inmutables que capturan posiciones de jugadores y balón) y el índice activo (`currentKeyframeIndex`). Provee acciones para crear, duplicar, insertar, eliminar y navegar entre keyframes. Se integra con `playStore.updateItemPosition` mediante auto-save.
+- **uiStore:** Estado de la interfaz (visibilidad de paneles, zoom, pan, grid).
+
 ---
 
 ## 🎨 ELEMENTOS VISUALES
