@@ -33,8 +33,8 @@
 - [x] 4.2 - Implementar resaltado visual cuando balón está cerca de jugador
 - [x] 4.3 - Implementar vinculación automática al soltar balón cerca
 - [x] 4.4 - Implementar indicador visual de balón vinculado (línea punteada/ícono)
-- [ ] 4.5 - Implementar movimiento conjunto balón-jugador cuando están vinculados
-- [ ] 4.6 - Implementar desvinculación al arrastrar balón lejos del jugador
+- [x] 4.5 - Implementar movimiento conjunto balón-jugador cuando están vinculados (Note: Functionally working, but minor visual sync lag/gap on initial link is identified as technical debt)
+- [x] 4.6 - Implementar desvinculación al arrastrar balón lejos del jugador
 
 ## FASE 5: Sistema de Keyframes
 - [ ] 5.1 - Crear estructura de datos para keyframes

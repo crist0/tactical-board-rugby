@@ -117,6 +117,7 @@ The ball can be "linked" to a player so that it automatically follows its carrie
 - **`playStore.linkBallToPlayer(playerId)`** — Links the ball to a specific player. Passing `null` unlinks the ball.
 - **Position Synchronization:** When `updateItemPosition` is called on a player, the store checks `ball.linkedTo`. If the ball is linked to that player and the ball is on the field, the ball's position is automatically set relative to the player (offset to the right by 15 SVG units). This ensures the ball visually follows its carrier without requiring a separate `updateItemPosition` call for the ball.
 - **Defensive Override:** If the ball itself is dragged while linked, its position is recalculated from the linked player's position rather than using the raw mouse coordinates. This prevents the ball from detaching during manual movement.
+- **Distance-Based Unlinking:** Unlinking is handled automatically by distance thresholding during ball drag. If the ball is dragged more than a threshold distance away from its linked player, `ball.linkedTo` is set to `null`, breaking the association without requiring a manual action.
 - **Cleanup:** When a linked player is returned to the bench, the ball's `linkedTo` is automatically cleared. Similarly, returning the ball to the bench clears its `linkedTo`.
 - **Reset Behaviour:** `resetBoard()` clears all links by setting `ball.linkedTo = null`.
 

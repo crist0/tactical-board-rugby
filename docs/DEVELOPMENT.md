@@ -117,6 +117,10 @@ The link is broken (and `ball.linkedTo` set back to `null`) under these conditio
 - `resetBoard()` is called.
 - A manual call to `linkBallToPlayer(null)` is issued.
 
+### Known Technical Debt
+
+**Initial Sync Gap:** The +15 unit offset occasionally lags on the very first frame of linking. To be refactored during the Phase 5 animation engine implementation.
+
 ## Git Workflow
 - Commit at the end of each completed TASK.
 - Use conventional commit messages: `feat/chore/fix: [Phase X - Task X.Y] - description` (e.g., `chore: [Phase 1 - Task 1.4] - Optimize gitignore and update commit strategy`).

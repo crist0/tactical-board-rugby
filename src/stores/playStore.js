@@ -45,6 +45,8 @@ export const usePlayStore = defineStore('play', {
       linkedTo: null,
       lastMovedTimestamp: 0,
     },
+    /** @type {string|null} ID of a player temporarily excluded from ball linking during a drag interaction */
+    ballUnlinkExclusionId: null,
     /** @type {string} */
     teamAColor: localStorage.getItem('teamAColor') || '#0055ff',
     /** @type {string} */
@@ -134,6 +136,11 @@ export const usePlayStore = defineStore('play', {
 
       if (itemType === 'ball' && this.ball.id === id) {
         this.ball.isDragging = status;
+        // When a ball drag ends, clear the temporary unlink exclusion so the ball
+        // can re-link to the same player on the next drag interaction
+        if (!status) {
+          this.ballUnlinkExclusionId = null;
+        }
       }
     },
     /**
@@ -184,17 +191,58 @@ export const usePlayStore = defineStore('play', {
 
       if (itemType === 'ball' && this.ball.id === id) {
         this.ball.lastMovedTimestamp = Date.now();
-        // If the ball is linked to a player, compute position relative to that player
-        if (this.ball.linkedTo) {
-          const linkedPlayer = this.players.find((p) => p.id === this.ball.linkedTo);
-          if (linkedPlayer) {
-            this.ball.x = linkedPlayer.x + 15;
-            this.ball.y = linkedPlayer.y;
-            return;
+
+        // Find the nearest player on the field excluding the currently linked one
+        // and any player that is temporarily excluded (ballUnlinkExclusionId)
+        const playersOnField = this.players.filter(
+          (p) =>
+            p.location === 'field' &&
+            p.id !== this.ball.linkedTo &&
+            p.id !== this.ballUnlinkExclusionId,
+        );
+
+        let nearestPlayer = null;
+        let minDistance = Infinity;
+
+        for (const player of playersOnField) {
+          const dx = player.x - x;
+          const dy = player.y - y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestPlayer = player;
           }
         }
-        this.ball.x = x;
-        this.ball.y = y;
+
+        if (nearestPlayer && minDistance < 30) {
+          // Snap to the nearest player and establish the link
+          this.ball.linkedTo = nearestPlayer.id;
+          this.ball.x = nearestPlayer.x + 15;
+          this.ball.y = nearestPlayer.y;
+        } else if (this.ball.linkedTo) {
+          // Ball is currently linked — check distance to linked player
+          const linkedPlayer = this.players.find((p) => p.id === this.ball.linkedTo);
+          if (linkedPlayer) {
+            const dx = linkedPlayer.x - x;
+            const dy = linkedPlayer.y - y;
+            const distToLinked = Math.sqrt(dx * dx + dy * dy);
+            if (distToLinked >= 30) {
+              // Pulled away beyond threshold — unlink and add temporary exclusion
+              this.ball.linkedTo = null;
+              this.ballUnlinkExclusionId = linkedPlayer.id;
+              this.ball.x = x;
+              this.ball.y = y;
+            } else {
+              // Still within range — stay snapped to the player
+              this.ball.x = linkedPlayer.x + 15;
+              this.ball.y = linkedPlayer.y;
+            }
+          }
+        } else {
+          // Not linked and no new link — follow the cursor
+          this.ball.x = x;
+          this.ball.y = y;
+        }
       }
     },
     /**
@@ -242,6 +290,7 @@ export const usePlayStore = defineStore('play', {
       this.ball.x = 0;
       this.ball.y = 0;
       this.ball.linkedTo = null;
+      this.ballUnlinkExclusionId = null;
       this.ball.lastMovedTimestamp = 0;
     },
   },
