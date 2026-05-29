@@ -42,8 +42,8 @@
 - [x] 5.3 - Guardar posiciones de todos los elementos (30 jugadores + balón)
 - [x] 5.4 - Crear componente de línea de tiempo (footer)
 - [x] 5.5 - Mostrar keyframes como bloques visuales en línea de tiempo
-- [ ] 5.6 - Implementar navegación: click en keyframe para cargar
-- [ ] 5.7 - Implementar botones anterior/siguiente keyframe
+- [x] 5.6 - Implementar navegación: click en keyframe para cargar
+- [x] 5.7 - Implementar botones anterior/siguiente keyframe
 - [ ] 5.8 - Implementar playhead visual (indicador de posición actual)
 - [x] 5.9 - Implementar edición de keyframe existente (via auto-save on drag end)
 - [x] 5.10 - Implementar eliminación de keyframe

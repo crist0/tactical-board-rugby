@@ -31,6 +31,15 @@ const createSnapshot = (playStore) => ({
   },
 });
 
+/**
+ * Linearly interpolates between two values.
+ * @param {number} start - The start value.
+ * @param {number} end - The end value.
+ * @param {number} t - Progress from 0.0 to 1.0.
+ * @returns {number} The interpolated value.
+ */
+const lerp = (start, end, t) => start + (end - start) * t;
+
 export const usePlaybackStore = defineStore('playback', {
   state: () => ({
     /**
@@ -41,6 +50,22 @@ export const usePlaybackStore = defineStore('playback', {
     keyframes: [],
     /** @type {number} Index of the currently active keyframe. */
     currentKeyframeIndex: 0,
+
+    // --- Playback state ---
+    /** @type {boolean} Whether playback is currently active. */
+    isPlaying: false,
+    /** @type {number} Playback speed multiplier (e.g., 0.5, 1, 2). */
+    playbackSpeed: 1,
+    /** @type {number|null} The requestAnimationFrame ID for the playback loop. */
+    animationFrameId: null,
+    /** @type {number} Delta-time accumulator for interpolation progress (0.0 to 1.0). */
+    _currentProgress: 0,
+    /** @type {number|null} The timestamp of the previous frame, used for delta-time calculation. */
+    _lastFrameTime: null,
+    /** @type {{ players: Array<{id: string, x: number, y: number, location: string}>, ball: {id: string, x: number, y: number, location: string, linkedTo: string|null} }|null} */
+    _interpolationFromKeyframe: null,
+    /** @type {{ players: Array<{id: string, x: number, y: number, location: string}>, ball: {id: string, x: number, y: number, location: string, linkedTo: string|null} }|null} */
+    _interpolationToKeyframe: null,
   }),
 
   actions: {
@@ -113,6 +138,8 @@ export const usePlaybackStore = defineStore('playback', {
 
     /**
      * Loads a keyframe's state into playStore.
+     * This is INSTANT — no interpolation. Used for manual timeline clicks.
+     * Resets paused elapsed time since a manual jump invalidates any saved progress.
      * @param {number} index - The index of the keyframe to load.
      * @returns {Promise<void>}
      */
@@ -122,6 +149,8 @@ export const usePlaybackStore = defineStore('playback', {
       }
 
       this.currentKeyframeIndex = index;
+      this._currentProgress = 0;
+      this._lastFrameTime = null;
       await this._applySnapshot(this.keyframes[index]);
     },
 
@@ -212,6 +241,249 @@ export const usePlaybackStore = defineStore('playback', {
       const snapshot = deepClone(await this._captureSnapshot());
       this.keyframes = [snapshot];
       this.currentKeyframeIndex = 0;
+    },
+
+    // --- Playback actions ---
+
+    /**
+     * The main requestAnimationFrame tick function.
+     * Computes the interpolation progress between the from-keyframe and to-keyframe,
+     * applies the interpolated positions to playStore, and advances frames when complete.
+     * @param {number} timestamp - The high-resolution timestamp provided by rAF.
+     * @returns {Promise<void>}
+     */
+    async _tick(timestamp) {
+      if (!this.isPlaying) {
+        return;
+      }
+
+      // Initialize _lastFrameTime on the first tick of a segment (including resume from pause)
+      if (this._lastFrameTime === null) {
+        this._lastFrameTime = timestamp;
+      }
+
+      // Compute delta time and accumulate progress
+      const deltaTime = timestamp - this._lastFrameTime;
+      this._lastFrameTime = timestamp;
+
+      const duration = 1000 / this.playbackSpeed;
+      this._currentProgress += deltaTime / duration;
+      const progress = Math.min(this._currentProgress, 1.0);
+
+      const fromKF = this._interpolationFromKeyframe;
+      const toKF = this._interpolationToKeyframe;
+
+      if (fromKF && toKF) {
+        const playStore = await this._getPlayStore();
+
+        // Interpolate players
+        for (const fromPlayer of fromKF.players) {
+          const toPlayer = toKF.players.find((p) => p.id === fromPlayer.id);
+          const livePlayer = playStore.players.find((p) => p.id === fromPlayer.id);
+
+          if (!livePlayer) {
+            continue;
+          }
+
+          if (toPlayer) {
+            if (fromPlayer.location !== toPlayer.location) {
+              // Location changed (e.g., bench ↔ field) — do NOT interpolate position.
+              // Keep the player at their from-keyframe position until the final snap.
+              livePlayer.x = fromPlayer.x;
+              livePlayer.y = fromPlayer.y;
+              livePlayer.location = fromPlayer.location;
+            } else {
+              // Same location — interpolate position normally
+              livePlayer.x = lerp(fromPlayer.x, toPlayer.x, progress);
+              livePlayer.y = lerp(fromPlayer.y, toPlayer.y, progress);
+              livePlayer.location = fromPlayer.location;
+            }
+          } else {
+            // Player is in from-keyframe but not in to-keyframe (e.g., moved to bench)
+            // Snap to the from-keyframe position until the transition completes,
+            // then the final snap will handle it
+            livePlayer.x = fromPlayer.x;
+            livePlayer.y = fromPlayer.y;
+            livePlayer.location = fromPlayer.location;
+          }
+        }
+
+        // Handle players that are in to-keyframe but NOT in from-keyframe
+        // (e.g., a player was brought onto the field)
+        for (const toPlayer of toKF.players) {
+          const fromPlayer = fromKF.players.find((p) => p.id === toPlayer.id);
+          if (!fromPlayer) {
+            const livePlayer = playStore.players.find((p) => p.id === toPlayer.id);
+            if (livePlayer) {
+              // Player is new in the to-keyframe — keep them at their current position
+              // until the transition completes, then snap to to-keyframe
+              livePlayer.x = toPlayer.x;
+              livePlayer.y = toPlayer.y;
+              livePlayer.location = toPlayer.location;
+            }
+          }
+        }
+
+        // Interpolate ball
+        if (fromKF.ball.location !== toKF.ball.location) {
+          // Location changed — do NOT interpolate position.
+          // Keep the ball at its from-keyframe position until the final snap.
+          playStore.ball.x = fromKF.ball.x;
+          playStore.ball.y = fromKF.ball.y;
+          playStore.ball.location = fromKF.ball.location;
+        } else {
+          // Same location — interpolate position and location normally
+          playStore.ball.x = lerp(fromKF.ball.x, toKF.ball.x, progress);
+          playStore.ball.y = lerp(fromKF.ball.y, toKF.ball.y, progress);
+          playStore.ball.location = fromKF.ball.location;
+        }
+        // Interpolate ball linkedTo at midpoint
+        if (progress >= 0.5 && fromKF.ball.linkedTo !== toKF.ball.linkedTo) {
+          playStore.ball.linkedTo = toKF.ball.linkedTo;
+        } else if (progress < 0.5) {
+          playStore.ball.linkedTo = fromKF.ball.linkedTo;
+        }
+      }
+
+      if (progress >= 1.0) {
+        // Transition complete — snap to the exact to-keyframe positions
+        if (toKF) {
+          await this._applySnapshot(toKF);
+        }
+
+        // Advance to the next keyframe
+        const nextIndex = this.currentKeyframeIndex + 1;
+
+        if (nextIndex >= this.keyframes.length) {
+          // Finished the last keyframe — stop playback entirely
+          this.stop();
+          return;
+        }
+
+        this.currentKeyframeIndex = nextIndex;
+
+        // Reset accumulator for the next segment
+        this._currentProgress = 0;
+        this._lastFrameTime = null;
+
+        // Start the next interpolation
+        await this._startNextInterpolation();
+      }
+
+      // Schedule the next frame if still playing
+      if (this.isPlaying) {
+        this.animationFrameId = requestAnimationFrame((ts) => this._tick(ts));
+      }
+    },
+
+    /**
+     * Sets up the from/to keyframes for the next interpolation segment.
+     * Called when starting playback and after each frame transition completes.
+     * @returns {Promise<void>}
+     */
+    async _startNextInterpolation() {
+      if (this.keyframes.length === 0) {
+        this.pause();
+        return;
+      }
+
+      const fromIndex = this.currentKeyframeIndex;
+      const toIndex = (fromIndex + 1) % this.keyframes.length;
+
+      this._interpolationFromKeyframe = this.keyframes[fromIndex];
+      this._interpolationToKeyframe = this.keyframes[toIndex];
+      this._currentProgress = 0;
+      this._lastFrameTime = null;
+    },
+
+    /**
+     * Cancels the current animation frame without changing state flags.
+     */
+    _cancelAnimationFrame() {
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    },
+
+    /**
+     * Toggles playback between playing and paused states.
+     * @returns {Promise<void>}
+     */
+    async togglePlayback() {
+      if (this.isPlaying) {
+        this.pause();
+      } else {
+        await this.play();
+      }
+    },
+
+    /**
+     * Starts or resumes playback.
+     * If called from a paused state, _interpolationFromKeyframe is still set,
+     * so _startNextInterpolation is skipped (preserving _currentProgress).
+     * If called fresh (e.g., after stop or manual keyframe load), sets up a new segment.
+     * @returns {Promise<void>}
+     */
+    async play() {
+      if (this.keyframes.length === 0) {
+        return;
+      }
+
+      // If at the last keyframe, restart from the beginning
+      if (this.currentKeyframeIndex >= this.keyframes.length - 1) {
+        this.currentKeyframeIndex = 0;
+        await this._applySnapshot(this.keyframes[0]);
+      }
+
+      this.isPlaying = true;
+
+      // Only set up a new interpolation segment when starting fresh (not resuming from pause)
+      if (!this._interpolationFromKeyframe) {
+        await this._startNextInterpolation();
+      }
+
+      // Start the rAF loop
+      this.animationFrameId = requestAnimationFrame((ts) => this._tick(ts));
+    },
+
+    /**
+     * Pauses playback without changing the current keyframe.
+     * The interpolated positions from the last _tick remain visible.
+     * Does NOT snap to any keyframe — keeps the current visual state intact.
+     * Keeps from/to keyframes so resume continues from the exact paused progress.
+     * @returns {Promise<void>}
+     */
+    async pause() {
+      this.isPlaying = false;
+      this._cancelAnimationFrame();
+      this._lastFrameTime = null;
+      // _currentProgress is preserved — resume will continue from this exact value
+    },
+
+    /**
+     * Stops playback and resets to the first keyframe.
+     * @returns {Promise<void>}
+     */
+    async stop() {
+      this.isPlaying = false;
+      this._cancelAnimationFrame();
+
+      this._interpolationFromKeyframe = null;
+      this._interpolationToKeyframe = null;
+      this._currentProgress = 0;
+      this._lastFrameTime = null;
+
+      await this.loadKeyframe(0);
+    },
+
+    /**
+     * Updates the playback speed. Takes effect immediately on the next frame
+     * since duration is computed inline in _tick from this.playbackSpeed.
+     * @param {number} speed - The new speed multiplier (e.g., 0.5, 1, 2).
+     */
+    setSpeed(speed) {
+      this.playbackSpeed = speed;
     },
   },
 });

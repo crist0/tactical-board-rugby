@@ -6,6 +6,39 @@
         <span class="timeline__counter">{{ playbackStore.currentKeyframeIndex + 1 }} / {{ playbackStore.keyframes.length }}</span>
       </div>
 
+      <!-- Playback Controls -->
+      <div class="playback-controls">
+        <button
+          class="playback-controls__btn"
+          :class="{ 'playback-controls__btn--active': playbackStore.isPlaying }"
+          @click="togglePlayback"
+          :title="playbackStore.isPlaying ? 'Pause' : 'Play'"
+        >
+          <Play v-if="!playbackStore.isPlaying" :size="16" />
+          <Pause v-else :size="16" />
+        </button>
+
+        <button
+          class="playback-controls__btn"
+          @click="stopPlayback"
+          title="Stop"
+        >
+          <Square :size="14" />
+        </button>
+
+        <div class="playback-controls__speed">
+          <button
+            v-for="speed in speedOptions"
+            :key="speed"
+            class="playback-controls__speed-btn"
+            :class="{ 'playback-controls__speed-btn--active': playbackStore.playbackSpeed === speed }"
+            @click="setSpeed(speed)"
+          >
+            {{ speed }}x
+          </button>
+        </div>
+      </div>
+
       <div class="timeline__scroll-container" ref="scrollContainerRef">
         <div class="timeline__keyframes-wrapper">
           <TimelineKeyframe
@@ -58,6 +91,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
+import { Play, Pause, Square } from 'lucide-vue-next';
 import { usePlaybackStore } from '@/stores/playbackStore';
 import TimelineKeyframe from '@/components/timeline/TimelineKeyframe.vue';
 import ContextMenu from '@/components/timeline/ContextMenu.vue';
@@ -65,6 +99,9 @@ import ContextMenu from '@/components/timeline/ContextMenu.vue';
 const playbackStore = usePlaybackStore();
 
 const scrollContainerRef = ref(null);
+
+/** Available playback speed options. */
+const speedOptions = [0.5, 1, 2];
 
 const contextMenu = reactive({
   visible: false,
@@ -180,6 +217,31 @@ function handleDropEvent(event, dropIndex) {
   }
 
   scrollToActive();
+}
+
+// --- Playback control handlers ---
+
+/**
+ * Toggles playback between play and pause.
+ */
+async function togglePlayback() {
+  await playbackStore.togglePlayback();
+}
+
+/**
+ * Stops playback and resets to the first keyframe.
+ */
+async function stopPlayback() {
+  await playbackStore.stop();
+  scrollToActive();
+}
+
+/**
+ * Sets the playback speed.
+ * @param {number} speed
+ */
+async function setSpeed(speed) {
+  await playbackStore.setSpeed(speed);
 }
 
 // Listen for keyboard shortcut to dismiss context menu on Escape
@@ -324,6 +386,89 @@ onUnmounted(() => {
       &:active {
         background-color: #1d4ed8;
       }
+    }
+  }
+}
+
+/* Playback Controls */
+.playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 0 4px;
+  border-right: 1px solid #374151;
+  margin-right: 4px;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: transparent;
+    color: #9ca3af;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background-color: #374151;
+      color: #f3f4f6;
+    }
+
+    &:active {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    &--active {
+      background-color: #1e40af;
+      color: #bfdbfe;
+
+      &:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+      }
+    }
+  }
+
+  &__speed {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    margin-left: 4px;
+    padding-left: 4px;
+    border-left: 1px solid #374151;
+  }
+
+  &__speed-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 22px;
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: transparent;
+    color: #6b7280;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background-color: #374151;
+      color: #d1d5db;
+    }
+
+    &--active {
+      background-color: #374151;
+      border-color: #4b5563;
+      color: #f3f4f6;
     }
   }
 }
