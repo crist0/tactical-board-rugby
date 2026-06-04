@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-vue-next';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import LeftSidebar from '@/components/layout/LeftSidebar.vue';
@@ -37,8 +37,10 @@ import FieldCenter from '@/components/layout/FieldCenter.vue';
 import RightSidebar from '@/components/layout/RightSidebar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import { useUiStore } from '@/stores/uiStore';
+import { useHistoryStore } from '@/stores/historyStore';
 
 const uiStore = useUiStore();
+const historyStore = useHistoryStore();
 
 /**
  * @returns {object} The styles for the app shell.
@@ -51,6 +53,36 @@ const appShellStyles = computed(() => ({
     uiStore.isTimelineOpen ? 'var(--footer-height)' : '0px'
   }`,
 }));
+
+/**
+ * Global keyboard shortcut handler.
+ * Ctrl/Cmd+Z => undo
+ * Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y => redo
+ * @param {KeyboardEvent} event
+ */
+function onGlobalKeyDown(event) {
+  const isMod = event.ctrlKey || event.metaKey;
+
+  if (isMod && event.key === 'z' && !event.shiftKey) {
+    event.preventDefault();
+    historyStore.undo();
+    return;
+  }
+
+  if ((isMod && event.key === 'z' && event.shiftKey) || (isMod && event.key === 'y')) {
+    event.preventDefault();
+    historyStore.redo();
+    return;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onGlobalKeyDown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onGlobalKeyDown);
+});
 </script>
 
 <style lang="scss" scoped>

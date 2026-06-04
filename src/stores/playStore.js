@@ -78,6 +78,16 @@ export const usePlayStore = defineStore('play', {
       }
     },
     /**
+     * Lazy imports and returns the historyStore instance.
+     * Avoids circular dependency at module evaluation time.
+     * @returns {Promise<import('pinia').StoreGeneric>}
+     */
+    async _getHistoryStore() {
+      const { useHistoryStore } = await import('@/stores/historyStore');
+      return useHistoryStore();
+    },
+
+    /**
      * Lazy imports and returns the playbackStore instance.
      * Avoids circular dependency at module evaluation time.
      * @returns {Promise<import('pinia').StoreGeneric>}
@@ -91,12 +101,16 @@ export const usePlayStore = defineStore('play', {
      * Moves an item (player or ball) to a specific position on the field.
      * If the item is a player, it first checks if another player with the same
      * team and number is already on the field to prevent duplicates.
+     * Saves undo state BEFORE any mutation so Undo can restore the original location.
      * @param {string} itemType - The type of item to move ('player' or 'ball').
      * @param {string} id - The ID of the item to move.
      * @param {number} x - The new x-coordinate on the field.
      * @param {number} y - The new y-coordinate on the field.
      */
     async moveItemToField(itemType, id, x, y) {
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
+
       if (itemType === 'player') {
         const playerToMove = this.players.find((p) => p.id === id);
         if (!playerToMove) {
@@ -136,7 +150,13 @@ export const usePlayStore = defineStore('play', {
      * @param {string} id - The ID of the item.
      * @param {boolean} status - Whether the item is being dragged.
      */
-    setDragging(itemType, id, status) {
+    async setDragging(itemType, id, status) {
+      // Save undo state BEFORE any mutation when a drag starts.
+      // This captures the original location/position so Undo can restore it.
+      if (status) {
+        await (await this._getHistoryStore()).saveState();
+      }
+
       if (itemType === 'player') {
         const player = this.players.find((entry) => entry.id === id);
         if (player) {
@@ -271,6 +291,9 @@ export const usePlayStore = defineStore('play', {
      * @param {string} id - The ID of the item to return.
      */
     async returnToBench(itemType, id) {
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
+
       if (itemType === 'player') {
         const player = this.players.find((entry) => entry.id === id);
         if (!player) {
@@ -300,6 +323,9 @@ export const usePlayStore = defineStore('play', {
      * Resets the entire board by returning all players and the ball to the bench.
      */
     async resetBoard() {
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
+
       this.players.forEach((player) => {
         player.location = 'bench';
         player.x = 0;

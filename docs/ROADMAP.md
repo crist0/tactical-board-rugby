@@ -44,21 +44,20 @@
 - [x] 5.5 - Mostrar keyframes como bloques visuales en línea de tiempo
 - [x] 5.6 - Implementar navegación: click en keyframe para cargar
 - [x] 5.7 - Implementar botones anterior/siguiente keyframe
-- [ ] 5.8 - Implementar playhead visual (indicador de posición actual)
-- [x] 5.9 - Implementar edición de keyframe existente (via auto-save on drag end)
-- [x] 5.10 - Implementar eliminación de keyframe
-- [x] 5.11 - Implementar drag & drop para reordenar keyframes
-- [x] 5.12 - Implementar scroll horizontal en línea de tiempo
+- [x] 5.8 - Implementar edición de keyframe existente (via auto-save on drag end)
+- [x] 5.9 - Implementar eliminación de keyframe
+- [x] 5.10 - Implementar drag & drop para reordenar keyframes
+- [x] 5.11 - Implementar scroll horizontal en línea de tiempo
 
-## FASE 6: History Manager (Undo/Redo System)
-- [ ] 6.1 - Create `src/stores/historyStore.js`: Implement a Pinia store with `past` and `future` stacks to manage state snapshots.
-- [ ] 6.2 - State Serialization Logic: Create a helper to capture a lightweight snapshot of both `playStore` and `playbackStore`.
-- [ ] 6.3 - Action Capture Middleware: Implement logic to trigger `saveToHistory()` on critical actions:
+## FASE 6: History Manager (Undo/Redo System) - COMPLETED
+- [x] 6.1 - Create `src/stores/historyStore.js`: Implement a Pinia store with `past` and `future` stacks to manage state snapshots.
+- [x] 6.2 - State Serialization Logic: Create a helper to capture a lightweight snapshot of both `playStore` and `playbackStore`.
+- [x] 6.3 - Action Capture Middleware: Implement logic to trigger `saveToHistory()` on critical actions:
     * `onDragEnd` in the field (players/ball).
     * Keyframe creation, deletion, or reordering.
-- [ ] 6.4 - Configuration & Limits: Set a default history limit of 20 actions (configurable).
-- [ ] 6.5 - Undo/Redo Operations: Implement core logic to pop states from stacks and overwrite current stores (Option B strategy).
-- [ ] 6.6 - UI Implementation: Add Undo/Redo buttons to `AppHeader.vue` and implement global keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y` / `Ctrl+Shift+Z`).
+- [x] 6.4 - Configuration & Limits: Set a default history limit of 20 actions (configurable).
+- [x] 6.5 - Undo/Redo Operations: Implement core logic to pop states from stacks and overwrite current stores (Option B strategy).
+- [x] 6.6 - UI Implementation: Add Undo/Redo buttons to `AppHeader.vue` and implement global keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y` / `Ctrl+Shift+Z`).
 
 ## FASE 7: Sistema de Animación y Reproducción
 - [ ] 7.1 - Implementar interpolación de posiciones entre keyframes
@@ -109,13 +108,13 @@
 - [ ] 10.11 - Manejo de errores y edge cases
 
 ## FASE 11: Pulido y Optimización
-- [ ] 11.1 - Implementar feedback visual en todas las interacciones
-- [ ] 11.2 - Agregar transiciones/animaciones suaves en UI
-- [ ] 11.3 - Optimizar rendimiento del canvas
-- [ ] 11.4 - Implementar estados de carga (loading states)
-- [ ] 11.5 - Agregar mensajes de confirmación (eliminar, reset, etc.)
-- [ ] 11.6 - Implementar atajos de teclado útiles
-- [ ] 11.7 - Validaciones de formularios y campos
-- [ ] 11.8 - Responsive final (mobile, tablet, desktop)
-- [ ] 11.9 - Testing manual de flujos completos
-- [ ] 11.10 - Documentación básica (README)
+- [ ] 11.1 - Implementar playhead visual (indicador de posición actual)
+- [ ] 11.2 - Implementar feedback visual en todas las interacciones
+- [ ] 11.3 - Agregar transiciones/animaciones suaves en UI
+- [ ] 11.4 - Optimizar rendimiento del canvas
+- [ ] 11.5 - Implementar estados de carga (loading states)
+- [ ] 11.6 - Agregar mensajes de confirmación (eliminar, reset, etc.)
+- [ ] 11.7 - Implementar atajos de teclado útiles
+- [ ] 11.8 - Validaciones de formularios y campos
+- [ ] 11.9 - Responsive final (mobile, tablet, desktop)
+- [ ] 11.10 - Testing manual de flujos completos

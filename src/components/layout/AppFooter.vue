@@ -93,10 +93,12 @@
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
 import { Play, Pause, Square } from 'lucide-vue-next';
 import { usePlaybackStore } from '@/stores/playbackStore';
+import { useHistoryStore } from '@/stores/historyStore';
 import TimelineKeyframe from '@/components/timeline/TimelineKeyframe.vue';
 import ContextMenu from '@/components/timeline/ContextMenu.vue';
 
 const playbackStore = usePlaybackStore();
+const historyStore = useHistoryStore();
 
 const scrollContainerRef = ref(null);
 
@@ -143,21 +145,21 @@ async function addKeyframe() {
 /**
  * Deletes a keyframe at the given index.
  */
-function deleteKeyframe(index) {
+async function deleteKeyframe(index) {
   // If deleting the current keyframe, first load an adjacent one to keep state consistent
   if (index === playbackStore.currentKeyframeIndex && playbackStore.keyframes.length > 1) {
     const targetIndex = index === 0 ? 1 : index - 1;
-    playbackStore.loadKeyframe(targetIndex);
+    await playbackStore.loadKeyframe(targetIndex);
   }
-  playbackStore.deleteKeyframe(index);
+  await playbackStore.deleteKeyframe(index);
 }
 
 /**
  * Duplicates a keyframe to the end of the list.
  * @param {number} index
  */
-function duplicateKeyframe(index) {
-  playbackStore.duplicateKeyframeToEnd(index);
+async function duplicateKeyframe(index) {
+  await playbackStore.duplicateKeyframeToEnd(index);
   scrollToActive();
 }
 
@@ -165,8 +167,8 @@ function duplicateKeyframe(index) {
  * Inserts a cloned keyframe after the given index.
  * @param {number} index
  */
-function insertKeyframe(index) {
-  playbackStore.insertKeyframeAfter(index);
+async function insertKeyframe(index) {
+  await playbackStore.insertKeyframeAfter(index);
   scrollToActive();
 }
 
@@ -195,10 +197,13 @@ function closeContextMenu() {
  * @param {DragEvent} event - The native drop event.
  * @param {number} dropIndex - The index where the keyframe was dropped.
  */
-function handleDropEvent(event, dropIndex) {
+async function handleDropEvent(event, dropIndex) {
   const dragIndex = parseInt(event.dataTransfer.getData('text/plain'), 10);
   if (isNaN(dragIndex)) return;
   if (dragIndex === dropIndex) return;
+
+  // Save undo state BEFORE any mutation
+  await historyStore.saveState();
 
   const keyframes = playbackStore.keyframes;
   const [moved] = keyframes.splice(dragIndex, 1);

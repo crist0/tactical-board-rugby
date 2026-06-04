@@ -70,6 +70,16 @@ export const usePlaybackStore = defineStore('playback', {
 
   actions: {
     /**
+     * Internal: Returns the historyStore instance.
+     * Uses lazy import to avoid circular dependency at module evaluation time.
+     * @returns {Promise<import('pinia').StoreGeneric>} The history store instance.
+     */
+    async _getHistoryStore() {
+      const { useHistoryStore } = await import('@/stores/historyStore');
+      return useHistoryStore();
+    },
+
+    /**
      * Internal: Returns the playStore instance.
      * Uses lazy import to avoid circular dependency at module evaluation time.
      * @returns {Promise<import('pinia').StoreGeneric>} The play store instance.
@@ -161,6 +171,9 @@ export const usePlaybackStore = defineStore('playback', {
      * @returns {Promise<void>}
      */
     async addKeyframe() {
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
+
       const snapshot =
         this.keyframes.length > 0
           ? deepClone(this.keyframes[this.keyframes.length - 1])
@@ -175,10 +188,13 @@ export const usePlaybackStore = defineStore('playback', {
      * Also updates currentKeyframeIndex to point to the new keyframe.
      * @param {number} index - The index of the keyframe to duplicate.
      */
-    duplicateKeyframeToEnd(index) {
+    async duplicateKeyframeToEnd(index) {
       if (index < 0 || index >= this.keyframes.length) {
         return;
       }
+
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
 
       const cloned = deepClone(this.keyframes[index]);
       this.keyframes.push(cloned);
@@ -191,10 +207,13 @@ export const usePlaybackStore = defineStore('playback', {
      * Updates currentKeyframeIndex to point to the new keyframe.
      * @param {number} index - The index after which to insert the clone.
      */
-    insertKeyframeAfter(index) {
+    async insertKeyframeAfter(index) {
       if (index < 0 || index > this.keyframes.length) {
         return;
       }
+
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
 
       const cloned = deepClone(this.keyframes[index]);
       this.keyframes.splice(index + 1, 0, cloned);
@@ -209,7 +228,7 @@ export const usePlaybackStore = defineStore('playback', {
      * - If removing a later keyframe, the index stays unchanged.
      * @param {number} index - The index of the keyframe to delete.
      */
-    deleteKeyframe(index) {
+    async deleteKeyframe(index) {
       if (index < 0 || index >= this.keyframes.length) {
         return;
       }
@@ -218,6 +237,9 @@ export const usePlaybackStore = defineStore('playback', {
       if (this.keyframes.length <= 1) {
         return;
       }
+
+      // Save undo state BEFORE any mutation
+      await (await this._getHistoryStore()).saveState();
 
       this.keyframes.splice(index, 1);
 
