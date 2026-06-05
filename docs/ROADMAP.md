@@ -60,14 +60,14 @@
 - [x] 6.6 - UI Implementation: Add Undo/Redo buttons to `AppHeader.vue` and implement global keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y` / `Ctrl+Shift+Z`).
 
 ## FASE 7: Sistema de Animación y Reproducción
-- [ ] 7.1 - Implementar interpolación de posiciones entre keyframes
-- [ ] 7.2 - Crear controles de reproducción (play/pause/stop)
-- [ ] 7.3 - Implementar botones de navegación (primer/último frame)
-- [ ] 7.4 - Implementar loop/repetición automática
-- [ ] 7.5 - Crear selector de velocidad (0.5s, 1s, 1.5s, 2s, 3s)
-- [ ] 7.6 - Implementar reproducción desde keyframe actual
-- [ ] 7.7 - Implementar reproducción desde inicio
-- [ ] 7.8 - Implementar navegación frame por frame manual
+- [x] 7.1 - Implementar interpolación de posiciones entre keyframes
+- [x] 7.2 - Crear controles de reproducción (play/pause/stop)
+- [x] 7.3 - Implementar botones de navegación (primer/último frame)
+- [x] 7.4 - Implementar loop/repetición automática
+- [x] 7.5 - Crear selector de velocidad (0.5s, 1s, 1.5s, 2s, 3s)
+- [x] 7.6 - Implementar reproducción desde keyframe actual
+- [x] 7.7 - Implementar reproducción desde inicio
+- [x] 7.8 - Implementar navegación frame por frame manual
 - [ ] 7.9 - Sincronizar playhead con reproducción
 
 ## FASE 8: Herramientas de Anotación

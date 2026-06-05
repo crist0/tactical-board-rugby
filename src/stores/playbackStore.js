@@ -54,6 +54,8 @@ export const usePlaybackStore = defineStore('playback', {
     // --- Playback state ---
     /** @type {boolean} Whether playback is currently active. */
     isPlaying: false,
+    /** @type {boolean} Whether playback should loop back to the start when reaching the end. */
+    isLooping: false,
     /** @type {number} Playback speed multiplier (e.g., 0.5, 1, 2). */
     playbackSpeed: 1,
     /** @type {number|null} The requestAnimationFrame ID for the playback loop. */
@@ -377,12 +379,18 @@ export const usePlaybackStore = defineStore('playback', {
         const nextIndex = this.currentKeyframeIndex + 1;
 
         if (nextIndex >= this.keyframes.length) {
-          // Finished the last keyframe — stop playback entirely
-          this.stop();
-          return;
+          if (this.isLooping) {
+            // Loop back to the first keyframe seamlessly
+            this.currentKeyframeIndex = 0;
+            await this._applySnapshot(this.keyframes[0]);
+          } else {
+            // Finished the last keyframe — stop playback entirely
+            this.stop();
+            return;
+          }
+        } else {
+          this.currentKeyframeIndex = nextIndex;
         }
-
-        this.currentKeyframeIndex = nextIndex;
 
         // Reset accumulator for the next segment
         this._currentProgress = 0;
@@ -497,6 +505,50 @@ export const usePlaybackStore = defineStore('playback', {
       this._lastFrameTime = null;
 
       await this.loadKeyframe(0);
+    },
+
+    /**
+     * Toggles the looping mode on/off.
+     * When enabled, playback restarts from the first keyframe after reaching the end.
+     */
+    toggleLoop() {
+      this.isLooping = !this.isLooping;
+    },
+
+    /**
+     * Navigates to the first keyframe instantly.
+     * @returns {Promise<void>}
+     */
+    async firstFrame() {
+      await this.loadKeyframe(0);
+    },
+
+    /**
+     * Navigates to the previous keyframe instantly, if not already at the first one.
+     * @returns {Promise<void>}
+     */
+    async prevFrame() {
+      if (this.currentKeyframeIndex > 0) {
+        await this.loadKeyframe(this.currentKeyframeIndex - 1);
+      }
+    },
+
+    /**
+     * Navigates to the next keyframe instantly, if not already at the last one.
+     * @returns {Promise<void>}
+     */
+    async nextFrame() {
+      if (this.currentKeyframeIndex < this.keyframes.length - 1) {
+        await this.loadKeyframe(this.currentKeyframeIndex + 1);
+      }
+    },
+
+    /**
+     * Navigates to the last keyframe instantly.
+     * @returns {Promise<void>}
+     */
+    async lastFrame() {
+      await this.loadKeyframe(this.keyframes.length - 1);
     },
 
     /**

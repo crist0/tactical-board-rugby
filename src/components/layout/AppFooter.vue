@@ -10,6 +10,22 @@
       <div class="playback-controls">
         <button
           class="playback-controls__btn"
+          @click="firstFrame"
+          title="First frame"
+        >
+          <SkipBack :size="14" />
+        </button>
+
+        <button
+          class="playback-controls__btn"
+          @click="prevFrame"
+          title="Previous frame"
+        >
+          <ChevronLeft :size="14" />
+        </button>
+
+        <button
+          class="playback-controls__btn playback-controls__btn--main"
           :class="{ 'playback-controls__btn--active': playbackStore.isPlaying }"
           @click="togglePlayback"
           :title="playbackStore.isPlaying ? 'Pause' : 'Play'"
@@ -20,23 +36,40 @@
 
         <button
           class="playback-controls__btn"
-          @click="stopPlayback"
-          title="Stop"
+          @click="nextFrame"
+          title="Next frame"
         >
-          <Square :size="14" />
+          <ChevronRight :size="14" />
         </button>
 
-        <div class="playback-controls__speed">
-          <button
-            v-for="speed in speedOptions"
-            :key="speed"
-            class="playback-controls__speed-btn"
-            :class="{ 'playback-controls__speed-btn--active': playbackStore.playbackSpeed === speed }"
-            @click="setSpeed(speed)"
-          >
-            {{ speed }}x
-          </button>
-        </div>
+        <button
+          class="playback-controls__btn"
+          @click="lastFrame"
+          title="Last frame"
+        >
+          <SkipForward :size="14" />
+        </button>
+
+        <div class="playback-controls__divider"></div>
+
+        <button
+          class="playback-controls__btn"
+          :class="{ 'playback-controls__btn--looping': playbackStore.isLooping }"
+          @click="toggleLoop"
+          :title="playbackStore.isLooping ? 'Disable loop' : 'Enable loop'"
+        >
+          <Repeat :size="14" />
+        </button>
+
+        <div class="playback-controls__divider"></div>
+
+        <button
+          class="playback-controls__speed-btn"
+          @click="cycleSpeed"
+          title="Cycle playback speed"
+        >
+          {{ playbackStore.playbackSpeed }}x
+        </button>
       </div>
 
       <div class="timeline__scroll-container" ref="scrollContainerRef">
@@ -90,8 +123,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
-import { Play, Pause, Square } from 'lucide-vue-next';
+import { ref, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { Play, Pause, SkipBack, ChevronLeft, ChevronRight, SkipForward, Repeat } from 'lucide-vue-next';
 import { usePlaybackStore } from '@/stores/playbackStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import TimelineKeyframe from '@/components/timeline/TimelineKeyframe.vue';
@@ -102,7 +135,7 @@ const historyStore = useHistoryStore();
 
 const scrollContainerRef = ref(null);
 
-/** Available playback speed options. */
+/** Available playback speed options for cycling. */
 const speedOptions = [0.5, 1, 2];
 
 const contextMenu = reactive({
@@ -234,20 +267,60 @@ async function togglePlayback() {
 }
 
 /**
- * Stops playback and resets to the first keyframe.
+ * Jumps to the first keyframe.
  */
-async function stopPlayback() {
-  await playbackStore.stop();
+async function firstFrame() {
+  await playbackStore.firstFrame();
   scrollToActive();
 }
 
 /**
- * Sets the playback speed.
- * @param {number} speed
+ * Jumps to the previous keyframe.
  */
-async function setSpeed(speed) {
-  await playbackStore.setSpeed(speed);
+async function prevFrame() {
+  await playbackStore.prevFrame();
+  scrollToActive();
 }
+
+/**
+ * Jumps to the next keyframe.
+ */
+async function nextFrame() {
+  await playbackStore.nextFrame();
+  scrollToActive();
+}
+
+/**
+ * Jumps to the last keyframe.
+ */
+async function lastFrame() {
+  await playbackStore.lastFrame();
+  scrollToActive();
+}
+
+/**
+ * Toggles looping mode on/off.
+ */
+function toggleLoop() {
+  playbackStore.toggleLoop();
+}
+
+/**
+ * Cycles through speed options: 0.5x → 1x → 2x → 0.5x ...
+ */
+function cycleSpeed() {
+  const currentIdx = speedOptions.indexOf(playbackStore.playbackSpeed);
+  const nextIdx = (currentIdx + 1) % speedOptions.length;
+  playbackStore.setSpeed(speedOptions[nextIdx]);
+}
+
+// Auto-scroll to the active keyframe whenever the index changes
+watch(
+  () => playbackStore.currentKeyframeIndex,
+  () => {
+    scrollToActive();
+  },
+);
 
 // Listen for keyboard shortcut to dismiss context menu on Escape
 function onKeyDown(event) {
@@ -438,42 +511,72 @@ onUnmounted(() => {
         color: #ffffff;
       }
     }
+
+    &--main {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border-color: #4b5563;
+      background-color: #374151;
+      color: #d1d5db;
+
+      &:hover {
+        background-color: #4b5563;
+        color: #f3f4f6;
+      }
+
+      &--active {
+        background-color: #1e40af;
+        color: #bfdbfe;
+        border-color: #2563eb;
+
+        &:hover {
+          background-color: #2563eb;
+          color: #ffffff;
+        }
+      }
+    }
+
+    &--looping {
+      color: #60a5fa;
+
+      &:hover {
+        color: #93c5fd;
+      }
+    }
   }
 
-  &__speed {
-    display: flex;
-    align-items: center;
-    gap: 1px;
-    margin-left: 4px;
-    padding-left: 4px;
-    border-left: 1px solid #374151;
+  &__divider {
+    width: 1px;
+    height: 20px;
+    background-color: #374151;
+    margin: 0 3px;
   }
 
   &__speed-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 28px;
-    height: 22px;
-    padding: 0 4px;
-    font-size: 10px;
+    min-width: 32px;
+    height: 24px;
+    padding: 0 6px;
+    font-size: 11px;
     font-weight: 700;
-    border: 1px solid transparent;
-    border-radius: 3px;
+    border: 1px solid #4b5563;
+    border-radius: 4px;
     cursor: pointer;
-    background-color: transparent;
-    color: #6b7280;
+    background-color: #374151;
+    color: #9ca3af;
     transition: background-color 0.15s ease, color 0.15s ease;
 
     &:hover {
-      background-color: #374151;
-      color: #d1d5db;
+      background-color: #4b5563;
+      color: #f3f4f6;
     }
 
-    &--active {
-      background-color: #374151;
-      border-color: #4b5563;
-      color: #f3f4f6;
+    &:active {
+      background-color: #2563eb;
+      color: #ffffff;
     }
   }
 }
