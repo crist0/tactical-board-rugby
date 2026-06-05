@@ -23,6 +23,7 @@
         <FieldLines />
         <FieldGrid />
         <g id="field-elements">
+            <DrawingLayer />
             <foreignObject
               v-for="item in sortedElements"
               :key="item.id"
@@ -49,6 +50,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import FieldLines from '@/components/field/FieldLines.vue';
 import FieldGrid from '@/components/field/FieldGrid.vue';
+import DrawingLayer from '@/components/canvas/DrawingLayer.vue';
 import Player from '@/components/players/Player.vue';
 import Ball from '@/components/ball/Ball.vue';
 import { usePlayStore } from '@/stores/playStore';

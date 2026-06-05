@@ -36,6 +36,7 @@ const captureSnapshot = (playStore, playbackStore) => ({
     location: playStore.ball.location,
     linkedTo: playStore.ball.linkedTo,
   },
+  drawings: deepClone(playStore.drawings),
   keyframes: deepClone(playbackStore.keyframes),
   currentKeyframeIndex: playbackStore.currentKeyframeIndex,
 });
@@ -65,6 +66,9 @@ const applySnapshot = (playStore, playbackStore, snapshot) => {
   playStore.ball.location = snapshot.ball.location;
   playStore.ball.linkedTo = snapshot.ball.linkedTo;
 
+  // Overwrite drawings — replace the array entirely
+  playStore.drawings = deepClone(snapshot.drawings || []);
+
   // Overwrite keyframes — replace the array entirely
   playbackStore.keyframes.splice(0, playbackStore.keyframes.length, ...deepClone(snapshot.keyframes));
   playbackStore.currentKeyframeIndex = snapshot.currentKeyframeIndex;
@@ -75,16 +79,16 @@ export const useHistoryStore = defineStore('history', {
     /**
      * Stack of past state snapshots. Newest entries are at the end.
      * Max length is governed by MAX_HISTORY_LENGTH.
-     * @type {Array<{players: Array, ball: Object, keyframes: Array, currentKeyframeIndex: number}>}
-     */
-    past: [],
+   * @type {Array<{players: Array, ball: Object, drawings: Array, keyframes: Array, currentKeyframeIndex: number}>}
+   */
+  past: [],
 
     /**
      * Stack of future (redo) state snapshots. Newest entries are at the end.
      * Cleared whenever a new action records a state.
-     * @type {Array<{players: Array, ball: Object, keyframes: Array, currentKeyframeIndex: number}>}
-     */
-    future: [],
+   * @type {Array<{players: Array, ball: Object, drawings: Array, keyframes: Array, currentKeyframeIndex: number}>}
+   */
+  future: [],
 
     /**
      * Guards against re-recording state while an undo/redo operation

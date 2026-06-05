@@ -51,6 +51,8 @@ export const usePlayStore = defineStore('play', {
     teamAColor: localStorage.getItem('teamAColor') || '#0055ff',
     /** @type {string} */
     teamBColor: localStorage.getItem('teamBColor') || '#ff2222',
+    /** @type {Array<{id: string, type: string, color: string, width: number, opacity: number, points?: Array<{x: number, y: number}>, startX?: number, startY?: number, endX?: number, endY?: number}>} */
+    drawings: [],
   }),
   actions: {
     /**
@@ -322,6 +324,39 @@ export const usePlayStore = defineStore('play', {
     /**
      * Resets the entire board by returning all players and the ball to the bench.
      */
+    // --- Drawings ---
+    /**
+     * Adds a new drawing to the drawings array.
+     * @param {{id: string, type: string, color: string, width: number, opacity: number, points?: Array<{x: number, y: number}>, startX?: number, startY?: number, endX?: number, endY?: number}} drawing - The drawing object to add.
+     */
+    addDrawing(drawing) {
+      this.drawings.push(drawing);
+    },
+    /**
+     * Updates specific properties of a drawing by ID.
+     * @param {string} id - The ID of the drawing to update.
+     * @param {object} updates - An object with the properties to merge into the drawing.
+     */
+    updateDrawing(id, updates) {
+      const drawing = this.drawings.find((d) => d.id === id);
+      if (drawing) {
+        Object.assign(drawing, updates);
+      }
+    },
+    /**
+     * Removes a drawing from the array by ID.
+     * @param {string} id - The ID of the drawing to remove.
+     */
+    removeDrawing(id) {
+      this.drawings = this.drawings.filter((d) => d.id !== id);
+    },
+    /**
+     * Clears all drawings from the array.
+     */
+    clearDrawings() {
+      this.drawings = [];
+    },
+
     async resetBoard() {
       // Save undo state BEFORE any mutation
       await (await this._getHistoryStore()).saveState();

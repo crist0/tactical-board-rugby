@@ -29,6 +29,7 @@ const createSnapshot = (playStore) => ({
     location: playStore.ball.location,
     linkedTo: playStore.ball.linkedTo,
   },
+  drawings: deepClone(playStore.drawings),
 });
 
 /**
@@ -133,6 +134,9 @@ export const usePlaybackStore = defineStore('playback', {
       playStore.ball.y = snapshot.ball.y;
       playStore.ball.location = snapshot.ball.location;
       playStore.ball.linkedTo = snapshot.ball.linkedTo;
+
+      // Overwrite drawings — replace the array entirely
+      playStore.drawings = deepClone(snapshot.drawings || []);
     },
 
     /**
