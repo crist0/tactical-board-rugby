@@ -71,16 +71,16 @@
 - [ ] 7.9 - Sincronizar playhead con reproducción
 
 ## FASE 8: Herramientas de Anotación
-- [x] 8.1 - Crear panel de herramientas en sidebar izquierdo
-- [x] 8.2 - Implementar herramienta Flecha personalizada
-- [x] 8.3 - Implementar herramienta Línea libre
-- [x] 8.4 - Implementar herramienta Texto/Etiqueta
-- [x] 8.5 - Implementar herramienta Marcadores/Conos
-- [x] 8.6 - Crear panel de configuración dinámica por herramienta
-- [x] 8.7 - Implementar configuración: color personalizable
-- [x] 8.8 - Implementar configuración: grosor ajustable
-- [x] 8.9 - Implementar configuración: estilo de línea (sólido/punteado)
-- [x] 8.10 - Implementar configuración: tamaño de fuente (texto)
+- [x] 8.1 - Crear panel de herramientas en sidebar izquierdo - COMPLETED
+- [x] 8.2 - Implementar herramienta Flecha personalizada - COMPLETED
+- [x] 8.3 - Implementar herramienta Línea libre - COMPLETED
+- [x] 8.4 - Implementar herramienta Texto/Etiqueta - COMPLETED
+- [x] 8.5 - Implementar herramienta Marcadores/Conos - COMPLETED
+- [x] 8.6 - Crear panel de configuración dinámica por herramienta - COMPLETED
+- [x] 8.7 - Implementar configuración: color personalizable - COMPLETED
+- [x] 8.8 - Implementar configuración: grosor ajustable - COMPLETED
+- [x] 8.9 - Implementar configuración: estilo de línea (sólido/punteado) - COMPLETED
+- [x] 8.10 - Implementar configuración: tamaño de fuente (texto) - COMPLETED
 - [ ] 8.11 - Implementar configuración: tipos de marcadores
 - [ ] 8.12 - Guardar anotaciones en keyframes
 - [ ] 8.13 - Editar/eliminar anotaciones existentes
